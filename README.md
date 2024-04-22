@@ -1,12 +1,12 @@
 ---
-title: Ecologits Calculator
+title: EcoLogits Calculator
 emoji: 🌍
 colorFrom: gray
 colorTo: blue
 sdk: gradio
 sdk_version: 4.26.0
 app_file: app.py
-pinned: false
+pinned: true
 license: apache-2.0
 ---
 
