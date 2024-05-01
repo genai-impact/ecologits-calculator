@@ -1,6 +1,6 @@
 ---
 title: EcoLogits Calculator
-emoji: 🌍
+emoji: 🌱
 colorFrom: gray
 colorTo: blue
 sdk: gradio
