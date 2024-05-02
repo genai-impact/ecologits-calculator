@@ -1,5 +1,16 @@
 import gradio as gr
 from ecologits.tracers.utils import compute_llm_impacts
+from pint import UnitRegistry
+
+u = UnitRegistry()
+u.define('kWh = kilowatt_hour')
+u.define('Wh = watt_hour')
+u.define('gCO2eq = gram')
+u.define('kgCO2eq = kilogram')
+u.define('kgSbeq = kilogram')
+u.define('MJ = megajoule')
+u.define('kJ = kilojoule')
+q = u.Quantity
 
 
 MODELS = [
@@ -42,7 +53,7 @@ PROMPTS = [
 def format_indicator(name: str, value: str, unit: str) -> str:
     return f"""
     ## {name}
-    $$ \LARGE {value} \ \small {unit} $$
+    $$ \LARGE {value} \ \large {unit} $$
     """
 
 
@@ -57,11 +68,21 @@ def form(
         output_token_count=prompt_generated_tokens,
         request_latency=100000
     )
+    energy_ = q(impacts.energy.value, impacts.energy.unit)
+    if energy_ < q("1 kWh"):
+        energy_ = energy_.to("Wh")
+    gwp_ = q(impacts.gwp.value, impacts.gwp.unit)
+    if gwp_ < q("1 kgCO2eq"):
+        gwp_ = gwp_.to("1 gCO2eq")
+    adpe_ = q(impacts.adpe.value, impacts.adpe.unit)
+    pe_ = q(impacts.pe.value, impacts.pe.unit)
+    if pe_ < q("1 MJ"):
+        pe_ = pe_.to("kJ")
     return (
-        format_indicator("⚡️ Energy", f"{impacts.energy.value:.3f}", impacts.energy.unit),
-        format_indicator("🌍 GHG Emissions", f"{impacts.gwp.value:.3f}", impacts.gwp.unit),
-        format_indicator("🪨 Abiotic Resources", f"{impacts.adpe.value:.3e}", impacts.adpe.unit),
-        format_indicator("⛽️ Primary Energy", f"{round(impacts.pe.value)}", impacts.pe.unit),
+        format_indicator("⚡️ Energy", f"{energy_.magnitude:.3g}", energy_.units),
+        format_indicator("🌍 GHG Emissions", f"{gwp_.magnitude:.3g}", gwp_.units),
+        format_indicator("🪨 Abiotic Resources", f"{adpe_.magnitude:.3g}", adpe_.units),
+        format_indicator("⛽️ Primary Energy", f"{pe_.magnitude:.3g}", pe_.units),
     )
 
 
