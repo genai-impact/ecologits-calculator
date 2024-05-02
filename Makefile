@@ -1,6 +1,6 @@
 
 install:
-	pip install -r requirements-dev.txt
+	pip install -U -r requirements-dev.txt
 
 start:
 	gradio app.py
