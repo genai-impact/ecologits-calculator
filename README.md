@@ -16,7 +16,7 @@ Check out the configuration reference at https://huggingface.co/docs/hub/spaces-
 To do:
 
 - [ ] Add a tab with basic documentation
-    - [ ] Definition of each indicator (tool tip) (Adrien)
+    - [x] Definition of each indicator (tool tip)
     - [ ] Basic explanation of the methodology 
         - Why it depends on the number of tokens? (What is a token?)
         - What is taken into account? (usage, manufacturing for inference != training)
@@ -26,6 +26,6 @@ To do:
 - [ ] Call to actions: (Valentin) 
     - Follow us on LinkedIn
     - Share the results of a simulation (e.g. export an image generated with plotly for instance?)
-- [ ] Add an advanced/expert tab (Adrien)
+- [x] Add an advanced/expert tab
     - True number of tokens
     - Expose more inputs like the electricity mix

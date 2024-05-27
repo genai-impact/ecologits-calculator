@@ -1,6 +1,11 @@
+from typing import Optional
 import gradio as gr
-from ecologits.tracers.utils import compute_llm_impacts
 from pint import UnitRegistry
+
+from ecologits.tracers.utils import compute_llm_impacts, _avg
+from ecologits.impacts.llm import compute_llm_impacts as compute_llm_impacts_expert
+from ecologits.impacts.llm import IF_ELECTRICITY_MIX_GWP, IF_ELECTRICITY_MIX_ADPE, IF_ELECTRICITY_MIX_PE
+from ecologits.model_repository import models
 
 u = UnitRegistry()
 u.define('kWh = kilowatt_hour')
@@ -42,12 +47,13 @@ MODELS = [
 
 
 PROMPTS = [
+    ("Write a Tweet", 50),
     ("Write an email", 170),
     ("Write an article summary", 250),
-    ("Write a Tweet", 50),
+    ("Small conversation with a chatbot", 400),
     ("Write a report of 5 pages", 5000),
-    ("Small conversation with a chatbot", 400)
 ]
+PROMPTS = [(s + f" ({v} output tokens)", v) for (s, v) in PROMPTS]
 
 
 def format_indicator(name: str, value: str, unit: str) -> str:
@@ -57,17 +63,7 @@ def format_indicator(name: str, value: str, unit: str) -> str:
     """
 
 
-def form(
-    model_name: str,
-    prompt_generated_tokens: int,
-):
-    provider, model_name = model_name.split('/', 1)
-    impacts = compute_llm_impacts(
-        provider=provider,
-        model_name=model_name,
-        output_token_count=prompt_generated_tokens,
-        request_latency=100000
-    )
+def form_output(impacts):
     energy_ = q(impacts.energy.value, impacts.energy.unit)
     if energy_ < q("1 kWh"):
         energy_ = energy_.to("Wh")
@@ -86,15 +82,61 @@ def form(
     )
 
 
+def form(
+    model_name: str,
+    prompt_generated_tokens: int
+):
+    provider, model_name = model_name.split('/', 1)
+    impacts = compute_llm_impacts(
+        provider=provider,
+        model_name=model_name,
+        output_token_count=prompt_generated_tokens,
+        request_latency=100000
+    )
+    return form_output(impacts)
+
+
+def form_expert(
+    model_name: str,
+    prompt_generated_tokens: int,
+    mix_gwp: float,
+    mix_adpe: float,
+    mix_pe: float
+):
+    provider, model_name = model_name.split('/', 1)
+    model = models.find_model(provider=provider, model_name=model_name)
+    model_active_params = model.active_parameters or _avg(model.active_parameters_range)    # TODO: handle ranges
+    model_total_params = model.total_parameters or _avg(model.total_parameters_range)
+    impacts = compute_llm_impacts_expert(
+        model_active_parameter_count=model_active_params,
+        model_total_parameter_count=model_total_params,
+        output_token_count=prompt_generated_tokens,
+        request_latency=100000, 
+        if_electricity_mix_gwp=mix_gwp,
+        if_electricity_mix_adpe=mix_adpe,
+        if_electricity_mix_pe=mix_pe
+    )
+    return form_output(impacts)
+
+
 with gr.Blocks() as demo:
+
+### TITLE
+
     gr.Markdown("""
     # 🌱 EcoLogits Calculator
     
     **EcoLogits** is a python library that tracks the **energy consumption** and **environmental footprint** of using 
     **generative AI** models through APIs.
 
-    ⭐️ us on GitHub: [genai-impact/ecologits](https://github.com/genai-impact/ecologits) | Read the documentation: 
-    [ecologits.ai](https://ecologits.ai)
+    Read the documentation: 
+    [ecologits.ai](https://ecologits.ai) | ⭐️ us on GitHub: [genai-impact/ecologits](https://github.com/genai-impact/ecologits) 
+    """)
+
+### SIMPLE CALCULATOR
+
+    gr.Markdown(""" 
+    ## 😊 Calculator
     """)
 
     with gr.Row():
@@ -106,8 +148,8 @@ with gr.Blocks() as demo:
         )
         prompt = gr.Dropdown(
             PROMPTS,
-            label="Prompt",
-            value=170
+            label="Example prompt",
+            value=50
         )
 
     with gr.Row():
@@ -128,9 +170,72 @@ with gr.Blocks() as demo:
             latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
         )
 
-    btn = gr.Button("Submit")
-    btn.click(fn=form, inputs=[model, prompt], outputs=[energy, gwp, adpe, pe])
+    submit_btn = gr.Button("Submit")
+    submit_btn.click(fn=form, inputs=[model, prompt], outputs=[energy, gwp, adpe, pe])
 
+### EXPERT CALCULATOR
+
+    gr.Markdown(""" 
+    ## 🤓 Expert mode
+    """)
+    model = gr.Dropdown(
+        MODELS,
+        label="Model name",
+        value="openai/gpt-3.5-turbo",
+        filterable=True,
+    )
+    tokens = gr.Number(
+        label="Output tokens", 
+        value=100
+    )
+    mix_gwp = gr.Number(
+        label="Electricity mix - GHG emissions [kgCO2eq / kWh]",
+        value=IF_ELECTRICITY_MIX_GWP
+    )
+    mix_adpe = gr.Number(
+        label="Electricity mix - Abiotic resources [kgSbeq / kWh]",
+        value=IF_ELECTRICITY_MIX_ADPE
+    )
+    mix_pe = gr.Number(
+        label="Electricity mix - Primary energy [MJ / kWh]",
+        value=IF_ELECTRICITY_MIX_PE
+    )
+    
+    with gr.Row():
+        energy = gr.Markdown(
+            label="energy",
+            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+        )
+        gwp = gr.Markdown(
+            label="gwp",
+            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+        )
+        adpe = gr.Markdown(
+            label="adpe",
+            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+        )
+        pe = gr.Markdown(
+            label="pe",
+            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+        )
+
+    submit_btn = gr.Button("Submit")
+    submit_btn.click(
+        fn=form_expert, 
+        inputs=[model, tokens, mix_gwp, mix_adpe, mix_pe], 
+        outputs=[energy, gwp, adpe, pe]
+    )
+
+### INFORMATION ABOUT INDICATORS
+
+    gr.Markdown("""
+    ## 📊 More about the indicators
+
+    - ⚡️ **Energy**: Final energy consumption, 
+    - 🌍 **GHG Emissions**: Potential impact on global warming (commonly known as GHG/carbon emissions), 
+    - 🪨 **Abiotic Resources**: Impact on the depletion of non-living resources such as minerals or metals, 
+    - ⛽️ **Primary Energy**: Total energy consumed from primary sources.
+    """)
 
 if __name__ == '__main__':
     demo.launch()
