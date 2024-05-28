@@ -30,6 +30,6 @@ To do:
 - [x] Add an advanced/expert tab
     - [x] True number of tokens
     - [x] Expose more inputs like the electricity mix
-    - [ ] Examples of electricity mixes
+    - [x] Examples of electricity mixes
     - [x] Custom number of parameters
 - [ ] Idea : "estimate a given prompt impact" function which allows to enter a prompt in a text field and estimate its impacts
