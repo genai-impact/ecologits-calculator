@@ -15,6 +15,9 @@ u.define('kgCO2eq = kilogram')
 u.define('kgSbeq = kilogram')
 u.define('MJ = megajoule')
 u.define('kJ = kilojoule')
+u.define('m = meter')
+u.define('km = kilometer')
+u.define('episodes = number of episodes')
 q = u.Quantity
 
 
@@ -64,21 +67,31 @@ def format_indicator(name: str, value: str, unit: str) -> str:
 
 
 def form_output(impacts):
+    
     energy_ = q(impacts.energy.value, impacts.energy.unit)
+    eq_energy_ = q(impacts.energy.value * 2, 'km')
     if energy_ < q("1 kWh"):
         energy_ = energy_.to("Wh")
+        eq_energy_ = q(impacts.energy.value * 2000, 'm')
+    
     gwp_ = q(impacts.gwp.value, impacts.gwp.unit)
+    eq_gwp_ = q(impacts.gwp.value / 0.032, 'episodes')
     if gwp_ < q("1 kgCO2eq"):
         gwp_ = gwp_.to("1 gCO2eq")
+        eq_gwp_ = q(impacts.gwp.value / 0.032, 'episodes')
     adpe_ = q(impacts.adpe.value, impacts.adpe.unit)
+    
     pe_ = q(impacts.pe.value, impacts.pe.unit)
     if pe_ < q("1 MJ"):
         pe_ = pe_.to("kJ")
+    
     return (
         format_indicator("⚡️ Energy", f"{energy_.magnitude:.3g}", energy_.units),
         format_indicator("🌍 GHG Emissions", f"{gwp_.magnitude:.3g}", gwp_.units),
         format_indicator("🪨 Abiotic Resources", f"{adpe_.magnitude:.3g}", adpe_.units),
         format_indicator("⛽️ Primary Energy", f"{pe_.magnitude:.3g}", pe_.units),
+        format_indicator("🔋 Equivalent energy : distance with a small electric car", f"{eq_energy_.magnitude:.3g}", eq_energy_.units),
+        format_indicator("🏰 Equivalent emissions for 1000 prompts : watching GoT in streaming", f"{eq_gwp_.magnitude:.3g}", eq_gwp_.units)
     )
 
 
@@ -130,112 +143,148 @@ with gr.Blocks() as demo:
     **generative AI** models through APIs.
 
     Read the documentation: 
-    [ecologits.ai](https://ecologits.ai) | ⭐️ us on GitHub: [genai-impact/ecologits](https://github.com/genai-impact/ecologits) 
+    [ecologits.ai](https://ecologits.ai) | ⭐️ us on GitHub: [genai-impact/ecologits](https://github.com/genai-impact/ecologits) |
+    Follow us on Linkedin ✅: [GenAI Impact](https://www.linkedin.com/company/genai-impact/posts/?feedView=all) 
     """)
 
 ### SIMPLE CALCULATOR
+    with gr.Tab("Home"):
+        gr.Markdown(""" 
+        ## 😊 Calculator
+        """)
 
-    gr.Markdown(""" 
-    ## 😊 Calculator
-    """)
+        with gr.Row():
+            model = gr.Dropdown(
+                MODELS,
+                label="Model name",
+                value="openai/gpt-3.5-turbo",
+                filterable=True,
+            )
+            prompt = gr.Dropdown(
+                PROMPTS,
+                label="Example prompt",
+                value=50
+            )
 
-    with gr.Row():
+        with gr.Row():
+            energy = gr.Markdown(
+                label="energy",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            gwp = gr.Markdown(
+                label="gwp",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            adpe = gr.Markdown(
+                label="adpe",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            pe = gr.Markdown(
+                label="pe",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            
+        gr.Markdown('---')
+            
+        with gr.Row():
+            equivalent_1 = gr.Markdown(
+                label="eq_energy",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            equivalent_2 = gr.Markdown(
+                label="eq_gwp",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+        
+        submit_btn = gr.Button("Submit")
+        submit_btn.click(fn=form, inputs=[model, prompt], outputs=[energy, gwp, adpe, pe, equivalent_1, equivalent_2])
+
+### EXPERT CALCULATOR
+    with gr.Tab("Expert Mode"):
+        gr.Markdown(""" 
+        ## 🤓 Expert mode
+        """)
         model = gr.Dropdown(
             MODELS,
             label="Model name",
             value="openai/gpt-3.5-turbo",
             filterable=True,
         )
-        prompt = gr.Dropdown(
-            PROMPTS,
-            label="Example prompt",
-            value=50
+        tokens = gr.Number(
+            label="Output tokens", 
+            value=100
+        )
+        mix_gwp = gr.Number(
+            label="Electricity mix - GHG emissions [kgCO2eq / kWh]",
+            value=IF_ELECTRICITY_MIX_GWP
+        )
+        mix_adpe = gr.Number(
+            label="Electricity mix - Abiotic resources [kgSbeq / kWh]",
+            value=IF_ELECTRICITY_MIX_ADPE
+        )
+        mix_pe = gr.Number(
+            label="Electricity mix - Primary energy [MJ / kWh]",
+            value=IF_ELECTRICITY_MIX_PE
+        )
+        
+        with gr.Row():
+            energy = gr.Markdown(
+                label="energy",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            gwp = gr.Markdown(
+                label="gwp",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            adpe = gr.Markdown(
+                label="adpe",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            pe = gr.Markdown(
+                label="pe",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+
+        submit_btn = gr.Button("Submit")
+        submit_btn.click(
+            fn=form_expert, 
+            inputs=[model, tokens, mix_gwp, mix_adpe, mix_pe], 
+            outputs=[energy, gwp, adpe, pe]
         )
 
-    with gr.Row():
-        energy = gr.Markdown(
-            label="energy",
-            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-        )
-        gwp = gr.Markdown(
-            label="gwp",
-            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-        )
-        adpe = gr.Markdown(
-            label="adpe",
-            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-        )
-        pe = gr.Markdown(
-            label="pe",
-            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-        )
-
-    submit_btn = gr.Button("Submit")
-    submit_btn.click(fn=form, inputs=[model, prompt], outputs=[energy, gwp, adpe, pe])
-
-### EXPERT CALCULATOR
-
-    gr.Markdown(""" 
-    ## 🤓 Expert mode
-    """)
-    model = gr.Dropdown(
-        MODELS,
-        label="Model name",
-        value="openai/gpt-3.5-turbo",
-        filterable=True,
-    )
-    tokens = gr.Number(
-        label="Output tokens", 
-        value=100
-    )
-    mix_gwp = gr.Number(
-        label="Electricity mix - GHG emissions [kgCO2eq / kWh]",
-        value=IF_ELECTRICITY_MIX_GWP
-    )
-    mix_adpe = gr.Number(
-        label="Electricity mix - Abiotic resources [kgSbeq / kWh]",
-        value=IF_ELECTRICITY_MIX_ADPE
-    )
-    mix_pe = gr.Number(
-        label="Electricity mix - Primary energy [MJ / kWh]",
-        value=IF_ELECTRICITY_MIX_PE
-    )
-    
-    with gr.Row():
-        energy = gr.Markdown(
-            label="energy",
-            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-        )
-        gwp = gr.Markdown(
-            label="gwp",
-            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-        )
-        adpe = gr.Markdown(
-            label="adpe",
-            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-        )
-        pe = gr.Markdown(
-            label="pe",
-            latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-        )
-
-    submit_btn = gr.Button("Submit")
-    submit_btn.click(
-        fn=form_expert, 
-        inputs=[model, tokens, mix_gwp, mix_adpe, mix_pe], 
-        outputs=[energy, gwp, adpe, pe]
-    )
+### METHOD QUICK EXPLANATION
+    with gr.Tab('Methodology'):
+        gr.Markdown("""##📖 Coming soon""")
 
 ### INFORMATION ABOUT INDICATORS
+    with gr.Accordion("📊 More about the indicators", open = False):
+        gr.Markdown("""
+        - ⚡️ **Energy**: Final energy consumption, 
+        - 🌍 **GHG Emissions**: Potential impact on global warming (commonly known as GHG/carbon emissions), 
+        - 🪨 **Abiotic Resources**: Impact on the depletion of non-living resources such as minerals or metals, 
+        - ⛽️ **Primary Energy**: Total energy consumed from primary sources.
+        """)
 
-    gr.Markdown("""
-    ## 📊 More about the indicators
-
-    - ⚡️ **Energy**: Final energy consumption, 
-    - 🌍 **GHG Emissions**: Potential impact on global warming (commonly known as GHG/carbon emissions), 
-    - 🪨 **Abiotic Resources**: Impact on the depletion of non-living resources such as minerals or metals, 
-    - ⛽️ **Primary Energy**: Total energy consumed from primary sources.
-    """)
+### INFORMATION ABOUT REDUCING IMPACTS
+    with gr.Accordion("📉 How to reduce / limit these impacts ?", open = False):
+        gr.Markdown("""
+                    
+        * ❓ **Fundamental rule** : Show **sobriety** on the uses of (generative) AI :
+            * Questionning the usefulness of the project ;
+            * Estimating impacts of the project ;
+            * Evaluating the project purpose ;
+            * Restricting the use case to the desired purposes
+        
+        * 🦾 On the hardware side :
+            * If you can, try to relocate the computing in low emissions and/or energy efficient datacenters
+        
+        * 🤖 On the ML side :
+            * Develop a zero-shot learning approach for general tasks ;
+            * Prefer the smaller and yet well-peforming models (using number of parameters for example)
+            * If a specialization is needed, always prefer fine-tuning an existing model than re-training one from scratch ;
+            * During model inference, try caching the most popular prompts ("hey, tell me a joke about ...")
+            
+        """)
 
 if __name__ == '__main__':
     demo.launch()
