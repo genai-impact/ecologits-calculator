@@ -1,6 +1,7 @@
-from typing import Optional
 import gradio as gr
 from pint import UnitRegistry
+
+from data.mixes import MIXES, find_mix
 
 from ecologits.tracers.utils import compute_llm_impacts, _avg
 from ecologits.impacts.llm import compute_llm_impacts as compute_llm_impacts_expert
@@ -47,7 +48,6 @@ MODELS = [
     ("Cohere / Command R", "cohere/command-r"),
     ("Cohere / Command R+", "cohere/command-r-plus"),
 ]
-
 
 PROMPTS = [
     ("Write a Tweet", 50),
@@ -145,6 +145,11 @@ def model_total_params_fn(model_name: str, n_param: float):
     provider, model_name = model_name.split('/', 1)
     model = models.find_model(provider=provider, model_name=model_name)
     return model.total_parameters or _avg(model.total_parameters_range)
+
+def mix_fn(country_code: str, mix_adpe: float, mix_pe: float, mix_gwp: float):
+    if country_code == CUSTOM:
+        return mix_gwp, mix_adpe, mix_pe
+    return find_mix(country_code)
 
 with gr.Blocks() as demo:
 
@@ -244,18 +249,34 @@ with gr.Blocks() as demo:
             label="Output tokens", 
             value=100
         )
-        mix_gwp = gr.Number(
-            label="Electricity mix - GHG emissions [kgCO2eq / kWh]",
-            value=IF_ELECTRICITY_MIX_GWP
+
+        mix = gr.Dropdown(
+            MIXES + [CUSTOM], 
+            label="Location",
+            value="WOR", 
+            filterable=True,
+            interactive=True
         )
         mix_adpe = gr.Number(
             label="Electricity mix - Abiotic resources [kgSbeq / kWh]",
-            value=IF_ELECTRICITY_MIX_ADPE
+            value=IF_ELECTRICITY_MIX_ADPE, 
+            interactive=True
         )
         mix_pe = gr.Number(
             label="Electricity mix - Primary energy [MJ / kWh]",
-            value=IF_ELECTRICITY_MIX_PE
+            value=IF_ELECTRICITY_MIX_PE, 
+            interactive=True
         )
+        mix_gwp = gr.Number(
+            label="Electricity mix - GHG emissions [kgCO2eq / kWh]",
+            value=IF_ELECTRICITY_MIX_GWP, 
+            interactive=True
+        )
+
+        mix.change(fn=mix_fn, inputs=[mix, mix_adpe, mix_pe, mix_gwp], outputs=[mix_adpe, mix_pe, mix_gwp])
+        mix_adpe.input(fn=custom, outputs=mix)
+        mix_pe.input(fn=custom, outputs=mix)
+        mix_gwp.input(fn=custom, outputs=mix)
         
         with gr.Row():
             energy = gr.Markdown(
@@ -314,7 +335,9 @@ with gr.Blocks() as demo:
 
 ### METHOD QUICK EXPLANATION
     with gr.Tab('Methodology'):
-        gr.Markdown("""📖 Coming soon""")
+        gr.Markdown("""## 📖 Methodology
+        🚧 Under construction
+        """)
 
 ### INFORMATION ABOUT INDICATORS
     with gr.Accordion("📊 More about the indicators", open = False):
