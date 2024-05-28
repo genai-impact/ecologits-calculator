@@ -25,7 +25,6 @@ To do:
 - [ ] Add more indicators like (km by car, kg of concrete, ...) we can use [impactco2.fr](https://impactco2.fr/). (Valentin)
     - [X] First version
     - [ ] To enrich
-    - [ ] Handle units (e.g. +1e3 shouldn't be in the output)
 - [ ] Call to actions: (Valentin) 
     - [X] Follow us on LinkedIn
     - [ ] Share the results of a simulation (e.g. export an image generated with plotly for instance?)
