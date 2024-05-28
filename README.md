@@ -28,6 +28,8 @@ To do:
     - [X] Follow us on LinkedIn
     - Share the results of a simulation (e.g. export an image generated with plotly for instance?)
 - [x] Add an advanced/expert tab
-    - True number of tokens
-    - Expose more inputs like the electricity mix
+    - [x] True number of tokens
+    - [x] Expose more inputs like the electricity mix
+    - [ ] Examples of electricity mixes
+    - [x] Custom number of parameters
 - [ ] Idea : "estimate a given prompt impact" function which allows to enter a prompt in a text field and estimate its impacts

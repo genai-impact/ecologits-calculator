@@ -28,7 +28,7 @@ MODELS = [
     ("Anthropic / Claude 3 Sonnet", "anthropic/claude-3-sonnet-20240229"),
     ("Anthropic / Claude 3 Haiku", "anthropic/claude-3-haiku-20240307"),
     ("Anthropic / Claude 2.1", "anthropic/claude-2.1"),
-    ("Anthropic / Claude 2", "anthropic/claude-2"),
+    ("Anthropic / Claude 2.0", "anthropic/claude-2.0"),
     ("Anthropic / Claude Instant 1.2", "anthropic/claude-instant-1.2"),
     ("Mistral AI / Mistral 7B", "mistralai/open-mistral-7b"),
     ("Mistral AI / Mixtral 8x7B", "mistralai/open-mixtral-8x7b"),
@@ -67,7 +67,6 @@ def format_indicator(name: str, value: str, unit: str) -> str:
 
 
 def form_output(impacts):
-    
     energy_ = q(impacts.energy.value, impacts.energy.unit)
     eq_energy_ = q(impacts.energy.value * 2, 'km')
     if energy_ < q("1 kWh"):
@@ -90,8 +89,8 @@ def form_output(impacts):
         format_indicator("🌍 GHG Emissions", f"{gwp_.magnitude:.3g}", gwp_.units),
         format_indicator("🪨 Abiotic Resources", f"{adpe_.magnitude:.3g}", adpe_.units),
         format_indicator("⛽️ Primary Energy", f"{pe_.magnitude:.3g}", pe_.units),
-        format_indicator("🔋 Equivalent energy : distance with a small electric car", f"{eq_energy_.magnitude:.3g}", eq_energy_.units),
-        format_indicator("🏰 Equivalent emissions for 1000 prompts : watching GoT in streaming", f"{eq_gwp_.magnitude:.3g}", eq_gwp_.units)
+        format_indicator("🔋 Equivalent energy: distance with a small electric car", f"{eq_energy_.magnitude:.3g}", eq_energy_.units),
+        format_indicator("🏰 Equivalent emissions for 1000 prompts: watching GoT in streaming", f"{eq_gwp_.magnitude:.3g}", eq_gwp_.units)
     )
 
 
@@ -110,16 +109,13 @@ def form(
 
 
 def form_expert(
-    model_name: str,
+    model_active_params: float,
+    model_total_params: float,
     prompt_generated_tokens: int,
     mix_gwp: float,
     mix_adpe: float,
     mix_pe: float
-):
-    provider, model_name = model_name.split('/', 1)
-    model = models.find_model(provider=provider, model_name=model_name)
-    model_active_params = model.active_parameters or _avg(model.active_parameters_range)    # TODO: handle ranges
-    model_total_params = model.total_parameters or _avg(model.total_parameters_range)
+): 
     impacts = compute_llm_impacts_expert(
         model_active_parameter_count=model_active_params,
         model_total_parameter_count=model_total_params,
@@ -132,10 +128,27 @@ def form_expert(
     return form_output(impacts)
 
 
+CUSTOM = "Custom"
+def custom(): 
+    return CUSTOM
+
+def model_active_params_fn(model_name: str, n_param: float):
+    if model_name == CUSTOM:
+        return n_param
+    provider, model_name = model_name.split('/', 1)
+    model = models.find_model(provider=provider, model_name=model_name)
+    return model.active_parameters or _avg(model.active_parameters_range)
+
+def model_total_params_fn(model_name: str, n_param: float):
+    if model_name == CUSTOM:
+        return n_param
+    provider, model_name = model_name.split('/', 1)
+    model = models.find_model(provider=provider, model_name=model_name)
+    return model.total_parameters or _avg(model.total_parameters_range)
+
 with gr.Blocks() as demo:
 
 ### TITLE
-
     gr.Markdown("""
     # 🌱 EcoLogits Calculator
     
@@ -144,7 +157,7 @@ with gr.Blocks() as demo:
 
     Read the documentation: 
     [ecologits.ai](https://ecologits.ai) | ⭐️ us on GitHub: [genai-impact/ecologits](https://github.com/genai-impact/ecologits) |
-    Follow us on Linkedin ✅: [GenAI Impact](https://www.linkedin.com/company/genai-impact/posts/?feedView=all) 
+    ✅ Follow us on Linkedin: [GenAI Impact](https://www.linkedin.com/company/genai-impact/posts/?feedView=all) 
     """)
 
 ### SIMPLE CALCULATOR
@@ -159,7 +172,7 @@ with gr.Blocks() as demo:
                 label="Model name",
                 value="openai/gpt-3.5-turbo",
                 filterable=True,
-            )
+            )                
             prompt = gr.Dropdown(
                 PROMPTS,
                 label="Example prompt",
@@ -205,11 +218,28 @@ with gr.Blocks() as demo:
         ## 🤓 Expert mode
         """)
         model = gr.Dropdown(
-            MODELS,
+            MODELS + [CUSTOM],
             label="Model name",
             value="openai/gpt-3.5-turbo",
             filterable=True,
+            interactive=True
         )
+        model_active_params = gr.Number(
+            label="Number of millions of active parameters",
+            value=45.0,
+            interactive=True  
+        )
+        model_total_params = gr.Number(
+            label="Number of millions of total parameters",
+            value=45.0,
+            interactive=True  
+        )
+    
+        model.change(fn=model_active_params_fn, inputs=[model, model_active_params], outputs=[model_active_params])
+        model.change(fn=model_total_params_fn, inputs=[model, model_total_params], outputs=[model_total_params])
+        model_active_params.input(fn=custom, outputs=[model])
+        model_total_params.input(fn=custom, outputs=[model])
+
         tokens = gr.Number(
             label="Output tokens", 
             value=100
@@ -248,13 +278,13 @@ with gr.Blocks() as demo:
         submit_btn = gr.Button("Submit")
         submit_btn.click(
             fn=form_expert, 
-            inputs=[model, tokens, mix_gwp, mix_adpe, mix_pe], 
+            inputs=[model_active_params, model_total_params, tokens, mix_gwp, mix_adpe, mix_pe], 
             outputs=[energy, gwp, adpe, pe]
         )
 
 ### METHOD QUICK EXPLANATION
     with gr.Tab('Methodology'):
-        gr.Markdown("""##📖 Coming soon""")
+        gr.Markdown("""📖 Coming soon""")
 
 ### INFORMATION ABOUT INDICATORS
     with gr.Accordion("📊 More about the indicators", open = False):
@@ -269,20 +299,20 @@ with gr.Blocks() as demo:
     with gr.Accordion("📉 How to reduce / limit these impacts ?", open = False):
         gr.Markdown("""
                     
-        * ❓ **Fundamental rule** : Show **sobriety** on the uses of (generative) AI :
-            * Questionning the usefulness of the project ;
-            * Estimating impacts of the project ;
-            * Evaluating the project purpose ;
-            * Restricting the use case to the desired purposes
+        * ❓ **Fundamental rule**: Show **sobriety** on the uses of (generative) AI
+            * Questionning the usefulness of the project;
+            * Estimating impacts of the project;
+            * Evaluating the project purpose;
+            * Restricting the use case to the desired purposes.
         
-        * 🦾 On the hardware side :
-            * If you can, try to relocate the computing in low emissions and/or energy efficient datacenters
+        * 🦾 On the hardware side
+            * If you can, try to relocate the computing in low emissions and/or energy efficient datacenters.
         
         * 🤖 On the ML side :
-            * Develop a zero-shot learning approach for general tasks ;
-            * Prefer the smaller and yet well-peforming models (using number of parameters for example)
-            * If a specialization is needed, always prefer fine-tuning an existing model than re-training one from scratch ;
-            * During model inference, try caching the most popular prompts ("hey, tell me a joke about ...")
+            * Develop a zero-shot learning approach for general tasks;
+            * Prefer the smaller and yet well-peforming models (using number of parameters for example); 
+            * If a specialization is needed, always prefer fine-tuning an existing model than re-training one from scratch;
+            * During model inference, try caching the most popular prompts ("hey, tell me a joke about ...").
             
         """)
 
