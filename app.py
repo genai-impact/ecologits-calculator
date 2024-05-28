@@ -275,11 +275,41 @@ with gr.Blocks() as demo:
                 latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
             )
 
+        with gr.Row():
+            energy = gr.Markdown(
+                label="energy",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            gwp = gr.Markdown(
+                label="gwp",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            adpe = gr.Markdown(
+                label="adpe",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            pe = gr.Markdown(
+                label="pe",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            
+        gr.Markdown('---')
+            
+        with gr.Row():
+            equivalent_1 = gr.Markdown(
+                label="eq_energy",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+            equivalent_2 = gr.Markdown(
+                label="eq_gwp",
+                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
+            )
+
         submit_btn = gr.Button("Submit")
         submit_btn.click(
             fn=form_expert, 
             inputs=[model_active_params, model_total_params, tokens, mix_gwp, mix_adpe, mix_pe], 
-            outputs=[energy, gwp, adpe, pe]
+            outputs=[energy, gwp, adpe, pe, equivalent_1, equivalent_2]
         )
 
 ### METHOD QUICK EXPLANATION
