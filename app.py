@@ -148,7 +148,7 @@ def model_total_params_fn(model_name: str, n_param: float):
 
 def mix_fn(country_code: str, mix_adpe: float, mix_pe: float, mix_gwp: float):
     if country_code == CUSTOM:
-        return mix_gwp, mix_adpe, mix_pe
+        return mix_adpe, mix_pe, mix_gwp
     return find_mix(country_code)
 
 with gr.Blocks() as demo:
