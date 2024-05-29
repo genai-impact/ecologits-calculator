@@ -230,12 +230,12 @@ with gr.Blocks() as demo:
             interactive=True
         )
         model_active_params = gr.Number(
-            label="Number of millions of active parameters",
+            label="Number of billions of active parameters",
             value=45.0,
             interactive=True  
         )
         model_total_params = gr.Number(
-            label="Number of millions of total parameters",
+            label="Number of billions of total parameters",
             value=45.0,
             interactive=True  
         )
