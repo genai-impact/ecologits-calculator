@@ -1,136 +1,84 @@
-import gradio as gr
-from pint import UnitRegistry
 
-from data.mixes import MIXES, find_mix
+import gradio as gr
+
 
 from ecologits.tracers.utils import compute_llm_impacts, _avg
 from ecologits.impacts.llm import compute_llm_impacts as compute_llm_impacts_expert
 from ecologits.impacts.llm import IF_ELECTRICITY_MIX_GWP, IF_ELECTRICITY_MIX_ADPE, IF_ELECTRICITY_MIX_PE
 from ecologits.model_repository import models
 
-u = UnitRegistry()
-u.define('kWh = kilowatt_hour')
-u.define('Wh = watt_hour')
-u.define('gCO2eq = gram')
-u.define('kgCO2eq = kilogram')
-u.define('kgSbeq = kilogram')
-u.define('MJ = megajoule')
-u.define('kJ = kilojoule')
-u.define('m = meter')
-u.define('km = kilometer')
-u.define('episodes = number of episodes')
-q = u.Quantity
-
-
-MODELS = [
-    ("OpenAI / GPT-3.5-Turbo", "openai/gpt-3.5-turbo"),
-    ("OpenAI / GPT-4", "openai/gpt-4"),
-    ("Anthropic / Claude 3 Opus", "anthropic/claude-3-opus-20240229"),
-    ("Anthropic / Claude 3 Sonnet", "anthropic/claude-3-sonnet-20240229"),
-    ("Anthropic / Claude 3 Haiku", "anthropic/claude-3-haiku-20240307"),
-    ("Anthropic / Claude 2.1", "anthropic/claude-2.1"),
-    ("Anthropic / Claude 2.0", "anthropic/claude-2.0"),
-    ("Anthropic / Claude Instant 1.2", "anthropic/claude-instant-1.2"),
-    ("Mistral AI / Mistral 7B", "mistralai/open-mistral-7b"),
-    ("Mistral AI / Mixtral 8x7B", "mistralai/open-mixtral-8x7b"),
-    ("Mistral AI / Mixtral 8x22B", "mistralai/open-mixtral-8x22b"),
-    ("Mistral AI / Tiny", "mistralai/mistral-tiny-2312"),
-    ("Mistral AI / Small", "mistralai/mistral-small-2402"),
-    ("Mistral AI / Medium", "mistralai/mistral-medium-2312"),
-    ("Mistral AI / Large", "mistralai/mistral-large-2402"),
-    ("Meta / Llama 3 8B", "huggingface_hub/meta-llama/Meta-Llama-3-8B"),
-    ("Meta / Llama 3 70B", "huggingface_hub/meta-llama/Meta-Llama-3-70B"),
-    ("Meta / Llama 2 7B", "huggingface_hub/meta-llama/Llama-2-7b-hf"),
-    ("Meta / Llama 2 13B", "huggingface_hub/meta-llama/Llama-2-13b-hf"),
-    ("Meta / Llama 2 70B", "huggingface_hub/meta-llama/Llama-2-70b-hf"),
-    ("Cohere / Command Light", "cohere/command-light"),
-    ("Cohere / Command", "cohere/command"),
-    ("Cohere / Command R", "cohere/command-r"),
-    ("Cohere / Command R+", "cohere/command-r-plus"),
-]
-
-PROMPTS = [
-    ("Write a Tweet", 50),
-    ("Write an email", 170),
-    ("Write an article summary", 250),
-    ("Small conversation with a chatbot", 400),
-    ("Write a report of 5 pages", 5000),
-]
-PROMPTS = [(s + f" ({v} output tokens)", v) for (s, v) in PROMPTS]
-
-
-def format_indicator(name: str, value: str, unit: str) -> str:
-    return f"""
-    ## {name}
-    $$ \LARGE {value} \ \large {unit} $$
-    """
-
-
-def form_output(impacts):
-    energy_ = q(impacts.energy.value, impacts.energy.unit)
-    eq_energy_ = q(impacts.energy.value * 2, 'km')
-    if energy_ < q("1 kWh"):
-        energy_ = energy_.to("Wh")
-        eq_energy_ = q(impacts.energy.value * 2000, 'm')
-    
-    gwp_ = q(impacts.gwp.value, impacts.gwp.unit)
-    eq_gwp_ = q(impacts.gwp.value / 0.032, 'episodes')
-    if gwp_ < q("1 kgCO2eq"):
-        gwp_ = gwp_.to("1 gCO2eq")
-        eq_gwp_ = q(impacts.gwp.value / 0.032, 'episodes')
-    adpe_ = q(impacts.adpe.value, impacts.adpe.unit)
-    
-    pe_ = q(impacts.pe.value, impacts.pe.unit)
-    if pe_ < q("1 MJ"):
-        pe_ = pe_.to("kJ")
-    
-    return (
-        format_indicator("⚡️ Energy", f"{energy_.magnitude:.3g}", energy_.units),
-        format_indicator("🌍 GHG Emissions", f"{gwp_.magnitude:.3g}", gwp_.units),
-        format_indicator("🪨 Abiotic Resources", f"{adpe_.magnitude:.3g}", adpe_.units),
-        format_indicator("⛽️ Primary Energy", f"{pe_.magnitude:.3g}", pe_.units),
-        format_indicator("🔋 Equivalent energy: distance with a small electric car", f"{eq_energy_.magnitude:.3g}", eq_energy_.units),
-        format_indicator("🏰 Equivalent emissions for 1000 prompts: watching GoT in streaming", f"{eq_gwp_.magnitude:.3g}", eq_gwp_.units)
-    )
-
-
-def form(
-    model_name: str,
-    prompt_generated_tokens: int
-):
-    provider, model_name = model_name.split('/', 1)
-    impacts = compute_llm_impacts(
-        provider=provider,
-        model_name=model_name,
-        output_token_count=prompt_generated_tokens,
-        request_latency=100000
-    )
-    return form_output(impacts)
-
-
-def form_expert(
-    model_active_params: float,
-    model_total_params: float,
-    prompt_generated_tokens: int,
-    mix_gwp: float,
-    mix_adpe: float,
-    mix_pe: float
-): 
-    impacts = compute_llm_impacts_expert(
-        model_active_parameter_count=model_active_params,
-        model_total_parameter_count=model_total_params,
-        output_token_count=prompt_generated_tokens,
-        request_latency=100000, 
-        if_electricity_mix_gwp=mix_gwp,
-        if_electricity_mix_adpe=mix_adpe,
-        if_electricity_mix_pe=mix_pe
-    )
-    return form_output(impacts)
-
+from src.assets import custom_css
+from src.electricity_mix import COUNTRY_CODES, find_electricity_mix
+from src.content import (
+    HERO_TEXT,
+    ABOUT_TEXT,
+    CITATION_LABEL,
+    CITATION_TEXT,
+    LICENCE_TEXT, METHODOLOGY_TEXT
+)
+from src.constants import (
+    PROVIDERS,
+    OPENAI_MODELS,
+    ANTHROPIC_MODELS,
+    COHERE_MODELS,
+    META_MODELS,
+    MISTRALAI_MODELS,
+    PROMPTS,
+    MODELS
+)
+from src.utils import (
+    format_impacts,
+    format_energy_eq_physical_activity,
+    PhysicalActivity,
+    format_energy_eq_electric_vehicle,
+    format_gwp_eq_streaming, format_energy_eq_electricity_production, EnergyProduction,
+    format_gwp_eq_airplane_paris_nyc, format_energy_eq_electricity_consumption_ireland
+)
 
 CUSTOM = "Custom"
-def custom(): 
+
+
+def model_list(provider: str) -> gr.Dropdown:
+    if provider == "openai":
+        return gr.Dropdown(
+            OPENAI_MODELS,
+            label="Model",
+            value=OPENAI_MODELS[0][1],
+            filterable=True,
+        )
+    elif provider == "anthropic":
+        return gr.Dropdown(
+            ANTHROPIC_MODELS,
+            label="Model",
+            value=ANTHROPIC_MODELS[0][1],
+            filterable=True,
+        )
+    elif provider == "cohere":
+        return gr.Dropdown(
+            COHERE_MODELS,
+            label="Model",
+            value=COHERE_MODELS[0][1],
+            filterable=True,
+        )
+    elif provider == "huggingface_hub/meta":
+        return gr.Dropdown(
+            META_MODELS,
+            label="Model",
+            value=META_MODELS[0][1],
+            filterable=True,
+        )
+    elif provider == "mistralai":
+        return gr.Dropdown(
+            MISTRALAI_MODELS,
+            label="Model",
+            value=MISTRALAI_MODELS[0][1],
+            filterable=True,
+        )
+
+
+def custom():
     return CUSTOM
+
 
 def model_active_params_fn(model_name: str, n_param: float):
     if model_name == CUSTOM:
@@ -139,6 +87,7 @@ def model_active_params_fn(model_name: str, n_param: float):
     model = models.find_model(provider=provider, model_name=model_name)
     return model.active_parameters or _avg(model.active_parameters_range)
 
+
 def model_total_params_fn(model_name: str, n_param: float):
     if model_name == CUSTOM:
         return n_param
@@ -146,82 +95,163 @@ def model_total_params_fn(model_name: str, n_param: float):
     model = models.find_model(provider=provider, model_name=model_name)
     return model.total_parameters or _avg(model.total_parameters_range)
 
+
 def mix_fn(country_code: str, mix_adpe: float, mix_pe: float, mix_gwp: float):
     if country_code == CUSTOM:
         return mix_adpe, mix_pe, mix_gwp
-    return find_mix(country_code)
+    return find_electricity_mix(country_code)
 
-with gr.Blocks() as demo:
 
-### TITLE
-    gr.Markdown("""
-    # 🌱 EcoLogits Calculator
-    
-    **EcoLogits** is a python library that tracks the **energy consumption** and **environmental footprint** of using 
-    **generative AI** models through APIs.
+with gr.Blocks(css=custom_css) as demo:
+    gr.Markdown(HERO_TEXT)
 
-    Read the documentation: 
-    [ecologits.ai](https://ecologits.ai) | ⭐️ us on GitHub: [genai-impact/ecologits](https://github.com/genai-impact/ecologits) |
-    ✅ Follow us on Linkedin: [GenAI Impact](https://www.linkedin.com/company/genai-impact/posts/?feedView=all) 
-    """)
-
-### SIMPLE CALCULATOR
-    with gr.Tab("Home"):
-        gr.Markdown(""" 
-        ## 😊 Calculator
-        """)
-
+    with gr.Tab("🧮 Calculator"):
         with gr.Row():
-            model = gr.Dropdown(
-                MODELS,
-                label="Model name",
-                value="openai/gpt-3.5-turbo",
+            gr.Markdown("# Estimate the environmental impacts of LLM inference")
+        with gr.Row():
+            input_provider = gr.Dropdown(
+                PROVIDERS,
+                label="Provider",
+                value=PROVIDERS[0][1],
                 filterable=True,
-            )                
-            prompt = gr.Dropdown(
+            )
+
+            input_model = gr.Dropdown(
+                OPENAI_MODELS,
+                label="Model",
+                value=OPENAI_MODELS[0][1],
+                filterable=True,
+            )
+            input_provider.change(model_list, input_provider, input_model)
+
+            input_prompt = gr.Dropdown(
                 PROMPTS,
                 label="Example prompt",
-                value=50
+                value=50,
             )
 
-        with gr.Row():
-            energy = gr.Markdown(
-                label="energy",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            gwp = gr.Markdown(
-                label="gwp",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            adpe = gr.Markdown(
-                label="adpe",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            pe = gr.Markdown(
-                label="pe",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            
-        gr.Markdown('---')
-            
-        with gr.Row():
-            equivalent_1 = gr.Markdown(
-                label="eq_energy",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            equivalent_2 = gr.Markdown(
-                label="eq_gwp",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-        
-        submit_btn = gr.Button("Submit")
-        submit_btn.click(fn=form, inputs=[model, prompt], outputs=[energy, gwp, adpe, pe, equivalent_1, equivalent_2])
 
-### EXPERT CALCULATOR
-    with gr.Tab("Expert Mode"):
-        gr.Markdown(""" 
-        ## 🤓 Expert mode
-        """)
+        @gr.render(inputs=[input_provider, input_model, input_prompt])
+        def render_simple(provider, model, prompt):
+            if provider.startswith("huggingface_hub"):
+                provider = provider.split("/")[0]
+            if models.find_model(provider, model) is not None:
+                impacts = compute_llm_impacts(
+                    provider=provider,
+                    model_name=model,
+                    output_token_count=prompt,
+                    request_latency=100000
+                )
+                impacts = format_impacts(impacts)
+
+                # Inference impacts
+                with gr.Blocks():
+                    with gr.Row():
+                        gr.Markdown("""
+                        ## Environmental impacts
+                        
+                        To understand how the environmental impacts are computed go to the 📖 Methodology tab. 
+                        """)
+                    with gr.Row():
+                        with gr.Column(scale=1, min_width=220):
+                            gr.Markdown(f"""
+                            <h2 align="center">⚡️ Energy</h2>
+                            $$ \Large {impacts.energy.magnitude:.3g} \ \large {impacts.energy.units} $$
+                            <p align="center"><i>Evaluates the electricity consumption<i></p><br>
+                            """)
+                        with gr.Column(scale=1, min_width=220):
+                            gr.Markdown(f"""
+                            <h2 align="center">🌍️ GHG Emissions</h2>
+                            $$ \Large {impacts.gwp.magnitude:.3g} \ \large {impacts.gwp.units} $$
+                            <p align="center"><i>Evaluates the effect on global warming<i></p><br>
+                            """)
+                        with gr.Column(scale=1, min_width=220):
+                            gr.Markdown(f"""
+                            <h2 align="center">🪨 Abiotic Resources</h2>
+                            $$ \Large {impacts.adpe.magnitude:.3g} \ \large {impacts.adpe.units} $$
+                            <p align="center"><i>Evaluates the use of metals and minerals<i></p><br>
+                            """)
+                        with gr.Column(scale=1, min_width=220):
+                            gr.Markdown(f"""
+                            <h2 align="center">⛽️ Primary Energy</h2>
+                            $$ \Large {impacts.pe.magnitude:.3g} \ \large {impacts.pe.units} $$
+                            <p align="center"><i>Evaluates the use of energy resources<i></p><br>
+                            """)
+
+                # Impacts equivalents
+                with gr.Blocks():
+                    with gr.Row():
+                        gr.Markdown("""
+                        ---
+                        ## That's equivalent to...
+                        
+                        Making this request to the LLM is equivalent to the following actions.
+                        """)
+                    with gr.Row():
+                        physical_activity, distance = format_energy_eq_physical_activity(impacts.energy)
+                        if physical_activity == PhysicalActivity.WALKING:
+                            physical_activity = "🚶‍♂️‍➡️ " + physical_activity.capitalize()
+                        if physical_activity == PhysicalActivity.RUNNING:
+                            physical_activity = "🏃‍♂️‍➡️ " + physical_activity.capitalize()
+                        with gr.Column(scale=1, min_width=300):
+                            gr.Markdown(f"""
+                            <h2 align="center">{physical_activity} $$ \Large {distance.magnitude:.3g}\ {distance.units} $$ </h2>
+                            <p align="center"><i>Based on energy consumption<i></p><br>
+                            """, latex_delimiters=[{"left": "$$", "right": "$$", "display": False}])
+
+                        ev_eq = format_energy_eq_electric_vehicle(impacts.energy)
+                        with gr.Column(scale=1, min_width=300):
+                            gr.Markdown(f"""
+                            <h2 align="center">🔋 Electric Vehicle $$ \Large {ev_eq.magnitude:.3g}\ {ev_eq.units} $$ </h2>
+                            <p align="center"><i>Based on energy consumption<i></p><br>
+                            """, latex_delimiters=[{"left": "$$", "right": "$$", "display": False}])
+
+                        streaming_eq = format_gwp_eq_streaming(impacts.gwp)
+                        with gr.Column(scale=1, min_width=300):
+                            gr.Markdown(f"""
+                            <h2 align="center">⏯️ Streaming $$ \Large {streaming_eq.magnitude:.3g}\ {streaming_eq.units} $$ </h2>
+                            <p align="center"><i>Based on GHG emissions<i></p><br>
+                            """, latex_delimiters=[{"left": "$$", "right": "$$", "display": False}])
+
+                # Bigger scale impacts equivalent
+                with gr.Blocks():
+                    with gr.Row():
+                        gr.Markdown("""
+                        ## What if 1% of the planet does this everyday for 1 year?
+                        
+                        If this use case is largely deployed around the world the equivalent impacts would be.
+                        """)
+                    with gr.Row():
+                        electricity_production, count = format_energy_eq_electricity_production(impacts.energy)
+                        if electricity_production == EnergyProduction.NUCLEAR:
+                            emoji = "☢️"
+                            name = "Nuclear power plants"
+                        if electricity_production == EnergyProduction.WIND:
+                            emoji = "💨️ "
+                            name = "Wind turbines"
+                        with gr.Column(scale=1, min_width=300):
+                            gr.Markdown(f"""
+                            <h2 align="center">{emoji} $$ \Large {count:.0f} $$ {name} <span style="font-size: 12px">(yearly)</span></h2>
+                            <p align="center"><i>Based on electricity consumption<i></p><br>
+                            """, latex_delimiters=[{"left": "$$", "right": "$$", "display": False}])
+
+                        ireland_count = format_energy_eq_electricity_consumption_ireland(impacts.energy)
+                        with gr.Column(scale=1, min_width=300):
+                            gr.Markdown(f"""
+                            <h2 align="center">🇮🇪 $$ \Large {ireland_count:.2g} $$ x Ireland <span style="font-size: 12px">(yearly ⚡️ cons.)</span></h2>
+                            <p align="center"><i>Based on electricity consumption<i></p><br>
+                            """, latex_delimiters=[{"left": "$$", "right": "$$", "display": False}])
+
+                        paris_nyc_airplane = format_gwp_eq_airplane_paris_nyc(impacts.gwp)
+                        with gr.Column(scale=1, min_width=300):
+                            gr.Markdown(f"""
+                            <h2 align="center">✈️ $$ \Large {paris_nyc_airplane:,.0f} $$ Paris ↔ NYC </h2>
+                            <p align="center"><i>Based on GHG emissions<i></p><br>
+                            """, latex_delimiters=[{"left": "$$", "right": "$$", "display": False}])
+
+    with gr.Tab("🤓 Expert Mode"):
+        with gr.Row():
+            gr.Markdown("# 🤓 Expert mode")
         model = gr.Dropdown(
             MODELS + [CUSTOM],
             label="Model name",
@@ -229,145 +259,140 @@ with gr.Blocks() as demo:
             filterable=True,
             interactive=True
         )
-        model_active_params = gr.Number(
+        input_model_active_params = gr.Number(
             label="Number of billions of active parameters",
             value=45.0,
-            interactive=True  
+            interactive=True
         )
-        model_total_params = gr.Number(
+        input_model_total_params = gr.Number(
             label="Number of billions of total parameters",
             value=45.0,
-            interactive=True  
+            interactive=True
         )
-    
-        model.change(fn=model_active_params_fn, inputs=[model, model_active_params], outputs=[model_active_params])
-        model.change(fn=model_total_params_fn, inputs=[model, model_total_params], outputs=[model_total_params])
-        model_active_params.input(fn=custom, outputs=[model])
-        model_total_params.input(fn=custom, outputs=[model])
+
+        model.change(fn=model_active_params_fn,
+                     inputs=[model, input_model_active_params],
+                     outputs=[input_model_active_params])
+        model.change(fn=model_total_params_fn,
+                     inputs=[model, input_model_total_params],
+                     outputs=[input_model_total_params])
+        input_model_active_params.input(fn=custom, outputs=[model])
+        input_model_total_params.input(fn=custom, outputs=[model])
 
         tokens = gr.Number(
-            label="Output tokens", 
+            label="Output tokens",
             value=100
         )
 
         mix = gr.Dropdown(
-            MIXES + [CUSTOM], 
+            COUNTRY_CODES + [CUSTOM],
             label="Location",
-            value="WOR", 
+            value="WOR",
             filterable=True,
             interactive=True
         )
-        mix_adpe = gr.Number(
-            label="Electricity mix - Abiotic resources [kgSbeq / kWh]",
-            value=IF_ELECTRICITY_MIX_ADPE, 
-            interactive=True
-        )
-        mix_pe = gr.Number(
-            label="Electricity mix - Primary energy [MJ / kWh]",
-            value=IF_ELECTRICITY_MIX_PE, 
-            interactive=True
-        )
-        mix_gwp = gr.Number(
+        input_mix_gwp = gr.Number(
             label="Electricity mix - GHG emissions [kgCO2eq / kWh]",
-            value=IF_ELECTRICITY_MIX_GWP, 
+            value=IF_ELECTRICITY_MIX_GWP,
+            interactive=True
+        )
+        input_mix_adpe = gr.Number(
+            label="Electricity mix - Abiotic resources [kgSbeq / kWh]",
+            value=IF_ELECTRICITY_MIX_ADPE,
+            interactive=True
+        )
+        input_mix_pe = gr.Number(
+            label="Electricity mix - Primary energy [MJ / kWh]",
+            value=IF_ELECTRICITY_MIX_PE,
             interactive=True
         )
 
-        mix.change(fn=mix_fn, inputs=[mix, mix_adpe, mix_pe, mix_gwp], outputs=[mix_adpe, mix_pe, mix_gwp])
-        mix_adpe.input(fn=custom, outputs=mix)
-        mix_pe.input(fn=custom, outputs=mix)
-        mix_gwp.input(fn=custom, outputs=mix)
-        
-        with gr.Row():
-            energy = gr.Markdown(
-                label="energy",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            gwp = gr.Markdown(
-                label="gwp",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            adpe = gr.Markdown(
-                label="adpe",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            pe = gr.Markdown(
-                label="pe",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
+        mix.change(fn=mix_fn,
+                   inputs=[mix, input_mix_gwp, input_mix_adpe, input_mix_pe],
+                   outputs=[input_mix_gwp, input_mix_adpe, input_mix_pe])
+        input_mix_gwp.input(fn=custom, outputs=mix)
+        input_mix_adpe.input(fn=custom, outputs=mix)
+        input_mix_pe.input(fn=custom, outputs=mix)
 
-        with gr.Row():
-            energy = gr.Markdown(
-                label="energy",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            gwp = gr.Markdown(
-                label="gwp",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            adpe = gr.Markdown(
-                label="adpe",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            pe = gr.Markdown(
-                label="pe",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            
-        gr.Markdown('---')
-            
-        with gr.Row():
-            equivalent_1 = gr.Markdown(
-                label="eq_energy",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
-            equivalent_2 = gr.Markdown(
-                label="eq_gwp",
-                latex_delimiters=[{"left": "$$", "right": "$$", "display": False}]
-            )
 
-        submit_btn = gr.Button("Submit")
-        submit_btn.click(
-            fn=form_expert, 
-            inputs=[model_active_params, model_total_params, tokens, mix_gwp, mix_adpe, mix_pe], 
-            outputs=[energy, gwp, adpe, pe, equivalent_1, equivalent_2]
+        @gr.render(inputs=[
+            input_model_active_params,
+            input_model_total_params,
+            input_prompt,
+            input_mix_gwp,
+            input_mix_adpe,
+            input_mix_pe
+        ])
+        def render_expert(
+                model_active_params,
+                model_total_params,
+                prompt,
+                mix_gwp,
+                mix_adpe,
+                mix_pe
+        ):
+            impacts = compute_llm_impacts_expert(
+                model_active_parameter_count=model_active_params,
+                model_total_parameter_count=model_total_params,
+                output_token_count=prompt,
+                request_latency=100000,
+                if_electricity_mix_gwp=mix_gwp,
+                if_electricity_mix_adpe=mix_adpe,
+                if_electricity_mix_pe=mix_pe
+            )
+            impacts = format_impacts(impacts)
+
+            with gr.Blocks():
+                with gr.Row():
+                    gr.Markdown("## Environmental impacts")
+                with gr.Row():
+                    with gr.Column(scale=1, min_width=220):
+                        gr.Markdown(f"""
+                        <h2 align="center">⚡️ Energy</h2>
+                        $$ \Large {impacts.energy.magnitude:.3g} \ \large {impacts.energy.units} $$
+                        <p align="center"><i>Evaluates the electricity consumption<i></p><br>
+                        """)
+                    with gr.Column(scale=1, min_width=220):
+                        gr.Markdown(f"""
+                        <h2 align="center">🌍️ GHG Emissions</h2>
+                        $$ \Large {impacts.gwp.magnitude:.3g} \ \large {impacts.gwp.units} $$
+                        <p align="center"><i>Evaluates the effect on global warming<i></p><br>
+                        """)
+                    with gr.Column(scale=1, min_width=220):
+                        gr.Markdown(f"""
+                        <h2 align="center">🪨 Abiotic Resources</h2>
+                        $$ \Large {impacts.adpe.magnitude:.3g} \ \large {impacts.adpe.units} $$
+                        <p align="center"><i>Evaluates the use of metals and minerals<i></p><br>
+                        """)
+                    with gr.Column(scale=1, min_width=220):
+                        gr.Markdown(f"""
+                        <h2 align="center">⛽️ Primary Energy</h2>
+                        $$ \Large {impacts.pe.magnitude:.3g} \ \large {impacts.pe.units} $$
+                        <p align="center"><i>Evaluates the use of energy resources<i></p><br>
+                        """)
+
+    with gr.Tab("📖 Methodology"):
+        gr.Markdown(METHODOLOGY_TEXT,
+                    elem_classes="descriptive-text",
+                    latex_delimiters=[
+                        {"left": "$$", "right": "$$", "display": True},
+                        {"left": "$", "right": "$", "display": False}
+                    ])
+
+    with gr.Tab("ℹ️ About"):
+        gr.Markdown(ABOUT_TEXT, elem_classes="descriptive-text",)
+
+    with gr.Accordion("📚 Citation", open=False):
+        gr.Textbox(
+            value=CITATION_TEXT,
+            label=CITATION_LABEL,
+            interactive=False,
+            show_copy_button=True,
+            lines=len(CITATION_TEXT.split('\n')),
         )
 
-### METHOD QUICK EXPLANATION
-    with gr.Tab('Methodology'):
-        gr.Markdown("""## 📖 Methodology
-        🚧 Under construction
-        """)
-
-### INFORMATION ABOUT INDICATORS
-    with gr.Accordion("📊 More about the indicators", open = False):
-        gr.Markdown("""
-        - ⚡️ **Energy**: Final energy consumption, 
-        - 🌍 **GHG Emissions**: Potential impact on global warming (commonly known as GHG/carbon emissions), 
-        - 🪨 **Abiotic Resources**: Impact on the depletion of non-living resources such as minerals or metals, 
-        - ⛽️ **Primary Energy**: Total energy consumed from primary sources.
-        """)
-
-### INFORMATION ABOUT REDUCING IMPACTS
-    with gr.Accordion("📉 How to reduce / limit these impacts ?", open = False):
-        gr.Markdown("""
-                    
-        * ❓ **Fundamental rule**: Show **sobriety** on the uses of (generative) AI
-            * Questionning the usefulness of the project;
-            * Estimating impacts of the project;
-            * Evaluating the project purpose;
-            * Restricting the use case to the desired purposes.
-        
-        * 🦾 On the hardware side
-            * If you can, try to relocate the computing in low emissions and/or energy efficient datacenters.
-        
-        * 🤖 On the ML side :
-            * Develop a zero-shot learning approach for general tasks;
-            * Prefer the smaller and yet well-peforming models (using number of parameters for example); 
-            * If a specialization is needed, always prefer fine-tuning an existing model than re-training one from scratch;
-            * During model inference, try caching the most popular prompts ("hey, tell me a joke about ...").
-            
-        """)
+    # License
+    gr.Markdown(LICENCE_TEXT)
 
 if __name__ == '__main__':
     demo.launch()

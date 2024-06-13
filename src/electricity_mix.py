@@ -1,7 +1,7 @@
 from csv import DictReader
 
 PATH = "data/electricity_mix.csv"
-MIXES = [
+COUNTRY_CODES = [
     ("🌎 World", "WOR"),
     ("🇪🇺 Europe", "EEE"),
     ("🇿🇼 Zimbabwe", "ZWE"),
@@ -143,7 +143,8 @@ MIXES = [
     ("🇦🇪 United Arab Emirates", "ARE")
 ]
 
-def find_mix(code: str):
+
+def find_electricity_mix(code: str):
     # TODO: Maybe more optimal to construct database at the beginning of the app
     #       in the same fashion as find_model
     res = []

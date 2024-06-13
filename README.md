@@ -1,13 +1,13 @@
 ---
 title: EcoLogits Calculator
-emoji: 🌱
-colorFrom: gray
-colorTo: blue
+emoji: 🧮
+colorFrom: green
+colorTo: indigo
 sdk: gradio
-sdk_version: 4.26.0
+sdk_version: 4.36.1
 app_file: app.py
 pinned: true
-license: apache-2.0
+license: cc-by-sa-4.0
 ---
 
 Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
@@ -33,5 +33,7 @@ To do:
     - [X] Expose more inputs like the electricity mix
     - [X] Examples of electricity mixes
     - [X] Custom number of parameters
-- [ ] Live reload mode (Adrien)
+- [x] Live reload mode
 - [ ] Idea : "estimate a given prompt impact" function which allows to enter a prompt in a text field and estimate its impacts
+- [ ] Idea: copy-paste a ChatGPT conversation link and estimate the impacts.
+- [ ] Idea: compare with country electricity consumption
