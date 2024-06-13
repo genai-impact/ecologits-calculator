@@ -279,7 +279,7 @@ with gr.Blocks(css=custom_css) as demo:
         input_model_active_params.input(fn=custom, outputs=[model])
         input_model_total_params.input(fn=custom, outputs=[model])
 
-        tokens = gr.Number(
+        input_tokens = gr.Number(
             label="Output tokens",
             value=100
         )
@@ -318,7 +318,7 @@ with gr.Blocks(css=custom_css) as demo:
         @gr.render(inputs=[
             input_model_active_params,
             input_model_total_params,
-            input_prompt,
+            input_tokens,
             input_mix_gwp,
             input_mix_adpe,
             input_mix_pe
@@ -326,7 +326,7 @@ with gr.Blocks(css=custom_css) as demo:
         def render_expert(
                 model_active_params,
                 model_total_params,
-                prompt,
+                tokens,
                 mix_gwp,
                 mix_adpe,
                 mix_pe
@@ -334,7 +334,7 @@ with gr.Blocks(css=custom_css) as demo:
             impacts = compute_llm_impacts_expert(
                 model_active_parameter_count=model_active_params,
                 model_total_parameter_count=model_total_params,
-                output_token_count=prompt,
+                output_token_count=tokens,
                 request_latency=100000,
                 if_electricity_mix_gwp=mix_gwp,
                 if_electricity_mix_adpe=mix_adpe,
