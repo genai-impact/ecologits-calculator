@@ -1,6 +1,6 @@
 from csv import DictReader
 
-PATH = "data/electricity_mix.csv"
+PATH = "src/electricity_mix.csv"
 COUNTRY_CODES = [
     ("🌎 World", "WOR"),
     ("🇪🇺 Europe", "EEE"),
