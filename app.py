@@ -308,8 +308,8 @@ with gr.Blocks(css=custom_css) as demo:
         )
 
         mix.change(fn=mix_fn,
-                   inputs=[mix, input_mix_gwp, input_mix_adpe, input_mix_pe],
-                   outputs=[input_mix_gwp, input_mix_adpe, input_mix_pe])
+                   inputs=[mix, input_mix_adpe, input_mix_pe, input_mix_gwp],
+                   outputs=[input_mix_adpe, input_mix_pe, input_mix_gwp])
         input_mix_gwp.input(fn=custom, outputs=mix)
         input_mix_adpe.input(fn=custom, outputs=mix)
         input_mix_pe.input(fn=custom, outputs=mix)
