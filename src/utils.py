@@ -62,14 +62,14 @@ EV_ENERGY_EQ = q("0.17 kWh / km")
 # From https://impactco2.fr/outils/comparateur?value=1&comparisons=streamingvideo
 STREAMING_GWP_EQ = q("15.6 h / kgCO2eq")
 
-# For a 900 MW nuclear plant -> 500 000 MWh / month
-# From https://www.edf.fr/groupe-edf/espaces-dedies/jeunes-enseignants/pour-les-jeunes/lenergie-de-a-a-z/produire-de-lelectricite/le-nucleaire-en-chiffres
-YEARLY_NUCLEAR_ENERGY_EQ = q("6 TWh")
-
 # From https://ourworldindata.org/population-growth
 ONE_PERCENT_WORLD_POPULATION = 80_000_000
 
 DAYS_IN_YEAR = 365
+
+# For a 900 MW nuclear plant -> 500 000 MWh / month
+# From https://www.edf.fr/groupe-edf/espaces-dedies/jeunes-enseignants/pour-les-jeunes/lenergie-de-a-a-z/produire-de-lelectricite/le-nucleaire-en-chiffres
+YEARLY_NUCLEAR_ENERGY_EQ = q("6 TWh")
 
 # For a 2MW wind turbine
 # https://www.ecologie.gouv.fr/eolien-terrestre

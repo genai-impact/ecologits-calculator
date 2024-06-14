@@ -177,29 +177,75 @@ Finally here are the **main hypotheses** we have made to compute the impacts.
 
 ## Equivalents
 
-### 🚶‍♂️‍➡️ Walking or 🏃‍♂️‍➡️ running distance
+We have integrated impact equivalents to help people better understand the impacts and have reference points for 
+standard use cases and everyday activities.
 
-🔴 TODO
+### Request impacts
 
-### 🔋 Electric Vehicle distance
+These equivalents are computed based on the request impacts only.
 
-🔴 TODO
+#### 🚶‍♂️‍➡️ Walking or 🏃‍♂️‍➡️ running distance
 
-### ⏯️ Streaming time
+We compare the ⚡️ direct energy consumption with the energy consumption of someone 🚶‍♂️‍➡️ walking or 🏃‍♂️‍➡️ running. 
+From [runningtools.com](https://www.runningtools.com/energyusage.htm) we consider the following energy values per 
+physical activity (for someone weighing 70kg):
 
-🔴 TODO
+* 🚶‍♂️‍➡️ walking: $ 196\ kJ/km $ (speed of $ 3\ km/h $)
+* 🏃‍♂️‍➡️ running: $ 294\ kJ/km $ (speed of $ 10\ km/h $)
+
+We divide the request energy consumption by these values to compute the distance traveled. 
+
+#### 🔋 Electric Vehicle distance
+
+We compare the ⚡️ direct energy consumption with the energy consumer by a EV car. From 
+[selectra.info](https://selectra.info/energie/actualites/insolite/consommation-vehicules-electriques-france-2040) or 
+[tesla.com](https://www.tesla.com/fr_fr/support/power-consumption) we consider an average value of energy consumed per 
+kilometer of: $ 0.17\ kWh/km $.
+
+We divide the request energy consumption by this value to compute the distance driven by an EV. 
+
+#### ⏯️ Streaming time
+
+We compare the 🌍 GHG emissions of the request and of streaming a video. From 
+[impactco2.fr](https://impactco2.fr/outils/comparateur?value=1&comparisons=streamingvideo), we consider that 
+$ 1\ kgCO2eq $ is equivalent to $ 15.6\ h $ of streaming.
+
+We multiply that value by the GHG emissions of the request to get an equivalent in hours of video streaming.
+
+### Scaled impacts
+
+These equivalents are computed based on the request impacts scaled to a worldwide adoption use case. We imply that the
+same request is done 1% of the planet everyday for 1 year, and then compute impact equivalents.
+
+$$
+I_{scaled} = I_{request} * [1 \\% \ \text{of}\ 8B\ \text{people on earth}] * 365\ \text{days}
+$$
 
 ### Number of 💨 wind turbines or ☢️ nuclear plants
 
-🔴 TODO
+We compare the ⚡️ direct energy consumption (scaled) by the energy production of wind turbines and nuclear power 
+plants. From [ecologie.gouv.fr](https://www.ecologie.gouv.fr/eolien-terrestre) we consider that a $ 2\ MW $ wind 
+turbine produces $ 4.2\ GWh $ a year. And from [edf.fr](https://www.edf.fr/groupe-edf/espaces-dedies/jeunes-enseignants/pour-les-jeunes/lenergie-de-a-a-z/produire-de-lelectricite/le-nucleaire-en-chiffres) 
+we learn that a $ 900\ MW $ nuclear power plant produces $ 6\ TWh $ a year.
+
+We divide the scaled energy consumption by these values to get the number of wind turbines or nuclear power plants 
+needed.
 
 ### Multiplier of 🇮🇪 Ireland electricity consumption
 
-🔴 TODO
+We compare the ⚡️ direct energy consumption (scaled) by the electricity consumption of Ireland per year. From 
+[wikipedia.org](https://en.wikipedia.org/wiki/List_of_countries_by_electricity_consumption) we consider the Ireland 
+electricity consumption to be $ 33\ TWh $ a year for a population of 5M.
+
+We divide the scaled energy consumption by this value to get the equivalent number of "Ireland countries".
 
 ### Number of ✈️ Paris ↔ New York City flights
 
-🔴 TODO
+We compare the 🌍 GHG emissions (scaled) of the request and of a return flight Paris ↔ New York City. From 
+[impactco2.fr](https://impactco2.fr/outils/comparateur?value=1&comparisons=&equivalent=avion-pny) we consider that a 
+return flight Paris → New York City → Paris emits $ 1770\ kgCO2eq $ with an average passenger load of 101-220.
+
+We divide the scaled GHG emissions by this value to get the equivalent number of return flights.
 
 **If you are motivated to help us test and enhance this methodology 
 [contact us](https://genai-impact.org/contact/)!** 💪
