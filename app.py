@@ -190,9 +190,9 @@ with gr.Blocks(css=custom_css) as demo:
                     with gr.Row():
                         physical_activity, distance = format_energy_eq_physical_activity(impacts.energy)
                         if physical_activity == PhysicalActivity.WALKING:
-                            physical_activity = "🚶‍♂️‍➡️ " + physical_activity.capitalize()
+                            physical_activity = "🚶 " + physical_activity.capitalize()
                         if physical_activity == PhysicalActivity.RUNNING:
-                            physical_activity = "🏃‍♂️‍➡️ " + physical_activity.capitalize()
+                            physical_activity = "🏃 " + physical_activity.capitalize()
                         with gr.Column(scale=1, min_width=300):
                             gr.Markdown(f"""
                             <h2 align="center">{physical_activity} $$ \Large {distance.magnitude:.3g}\ {distance.units} $$ </h2>
