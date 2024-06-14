@@ -219,7 +219,8 @@ with gr.Blocks(css=custom_css) as demo:
                         gr.Markdown("""
                         ## What if 1% of the planet does this everyday for 1 year?
                         
-                        If this use case is largely deployed around the world the equivalent impacts would be.
+                        If this use case is largely deployed around the world the equivalent impacts would be. (The 
+                        impacts of this request x 1% of 8 billion people x 365 days in a year.)
                         """)
                     with gr.Row():
                         electricity_production, count = format_energy_eq_electricity_production(impacts.energy)
