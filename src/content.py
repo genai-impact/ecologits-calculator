@@ -28,7 +28,7 @@ ABOUT_TEXT = r"""
 
 The rapid evolution of generative AI is reshaping numerous industries and aspects of our daily lives. While these 
 advancements offer some benefits, they also **pose substantial environmental challenges that cannot be overlooked**. 
-Plus the issue of AI's environmental footprint as been mainly discussed at training stage but rarely at the inference 
+Plus the issue of AI's environmental footprint has been mainly discussed at training stage but rarely at the inference 
 stage. That is an issue because **inference impacts for LLMs can largely overcome the training impacts when deployed 
 at large scales**.
 
