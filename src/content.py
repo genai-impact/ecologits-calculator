@@ -221,7 +221,7 @@ $$
 I_{scaled} = I_{request} * [1 \\% \ \text{of}\ 8B\ \text{people on earth}] * 365\ \text{days}
 $$
 
-### Number of 💨 wind turbines or ☢️ nuclear plants
+#### Number of 💨 wind turbines or ☢️ nuclear plants
 
 We compare the ⚡️ direct energy consumption (scaled) by the energy production of wind turbines and nuclear power 
 plants. From [ecologie.gouv.fr](https://www.ecologie.gouv.fr/eolien-terrestre) we consider that a $ 2\ MW $ wind 
@@ -231,7 +231,7 @@ we learn that a $ 900\ MW $ nuclear power plant produces $ 6\ TWh $ a year.
 We divide the scaled energy consumption by these values to get the number of wind turbines or nuclear power plants 
 needed.
 
-### Multiplier of 🇮🇪 Ireland electricity consumption
+#### Multiplier of 🇮🇪 Ireland electricity consumption
 
 We compare the ⚡️ direct energy consumption (scaled) by the electricity consumption of Ireland per year. From 
 [wikipedia.org](https://en.wikipedia.org/wiki/List_of_countries_by_electricity_consumption) we consider the Ireland 
@@ -239,7 +239,7 @@ electricity consumption to be $ 33\ TWh $ a year for a population of 5M.
 
 We divide the scaled energy consumption by this value to get the equivalent number of "Ireland countries".
 
-### Number of ✈️ Paris ↔ New York City flights
+#### Number of ✈️ Paris ↔ New York City flights
 
 We compare the 🌍 GHG emissions (scaled) of the request and of a return flight Paris ↔ New York City. From 
 [impactco2.fr](https://impactco2.fr/outils/comparateur?value=1&comparisons=&equivalent=avion-pny) we consider that a 
