@@ -1,6 +1,4 @@
-
 import gradio as gr
-
 
 from ecologits.tracers.utils import compute_llm_impacts, _avg
 from ecologits.impacts.llm import compute_llm_impacts as compute_llm_impacts_expert
@@ -127,7 +125,7 @@ with gr.Blocks(css=custom_css) as demo:
             input_prompt = gr.Dropdown(
                 PROMPTS,
                 label="Example prompt",
-                value=50,
+                value=400,
             )
 
 

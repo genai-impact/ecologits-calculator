@@ -7,8 +7,10 @@ PROVIDERS = [
 ]
 
 OPENAI_MODELS = [
-    ("GPT-3.5-Turbo", "gpt-3.5-turbo"),
+    ("GPT-4o", "gpt-4o"),
+    ("GPT-4-Turbo", "gpt-4-turbo"),
     ("GPT-4", "gpt-4"),
+    ("GPT-3.5-Turbo", "gpt-3.5-turbo"),
 ]
 
 ANTHROPIC_MODELS = [
@@ -55,8 +57,10 @@ PROMPTS = [
 PROMPTS = [(s + f" ({v} output tokens)", v) for (s, v) in PROMPTS]
 
 MODELS = [
-    ("OpenAI / GPT-3.5-Turbo", "openai/gpt-3.5-turbo"),
+    ("OpenAI / GPT-4o", "openai/gpt-4o"),
+    ("OpenAI / GPT-4-Turbo", "openai/gpt-4-turbo"),
     ("OpenAI / GPT-4", "openai/gpt-4"),
+    ("OpenAI / GPT-3.5-Turbo", "openai/gpt-3.5-turbo"),
     ("Anthropic / Claude 3 Opus", "anthropic/claude-3-opus-20240229"),
     ("Anthropic / Claude 3 Sonnet", "anthropic/claude-3-sonnet-20240229"),
     ("Anthropic / Claude 3 Haiku", "anthropic/claude-3-haiku-20240307"),
