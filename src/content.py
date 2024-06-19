@@ -243,7 +243,8 @@ We divide the scaled energy consumption by this value to get the equivalent numb
 
 We compare the 🌍 GHG emissions (scaled) of the request and of a return flight Paris ↔ New York City. From 
 [impactco2.fr](https://impactco2.fr/outils/comparateur?value=1&comparisons=&equivalent=avion-pny) we consider that a 
-return flight Paris → New York City → Paris emits $ 1770\ kgCO2eq $ with an average passenger load of 101-220.
+return flight Paris → New York City → Paris emits $ 177,000\ kgCO2eq $ with an average passenger load between 101 and 
+220.
 
 We divide the scaled GHG emissions by this value to get the equivalent number of return flights.
 

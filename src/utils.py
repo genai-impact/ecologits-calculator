@@ -81,7 +81,7 @@ YEARLY_IRELAND_ELECTRICITY_CONSUMPTION = q("33 TWh")
 IRELAND_POPULATION_MILLION = 5
 
 # From https://impactco2.fr/outils/comparateur?value=1&comparisons=&equivalent=avion-pny
-AIRPLANE_PARIS_NYC_GWP_EQ = q("1770 kgCO2eq")
+AIRPLANE_PARIS_NYC_GWP_EQ = q("177000 kgCO2eq")
 
 
 def format_energy(energy: Energy) -> Quantity:
@@ -167,16 +167,3 @@ def format_gwp_eq_airplane_paris_nyc(gwp: Quantity) -> float:
     gwp_eq = gwp * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
     gwp_eq = gwp_eq.to("kgCO2eq")
     return gwp_eq / AIRPLANE_PARIS_NYC_GWP_EQ
-
-
-if __name__ == '__main__':
-    # energy = 5590e-9    # GWh
-    # energy = 3.58e-9    # GWh
-    # val = q("5.59 kWh") # gpt4
-    val = q("0.448 Wh")
-    val = val.to("MWh")
-    pop = 80_000_000
-    days = 365
-
-    tot = val * pop * days
-    print(tot)
