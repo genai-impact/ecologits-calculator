@@ -215,7 +215,7 @@ with gr.Blocks(css=custom_css) as demo:
                 with gr.Blocks():
                     with gr.Row():
                         gr.Markdown("""
-                        ## What if 1% of the planet does this everyday for 1 year?
+                        ## What if 1% of the planet does this request everyday for 1 year?
                         
                         If this use case is largely deployed around the world the equivalent impacts would be. (The 
                         impacts of this request x 1% of 8 billion people x 365 days in a year.)
