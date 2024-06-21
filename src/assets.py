@@ -10,7 +10,7 @@ custom_css = """
     border: 1px solid #f19637;
     border-radius: 8px;
     padding: 4px 8px;
-    margin: 0px 8px;
+    margin: 4px 0px;
     font-size: 14px !important;
     font-weight: bold !important;
 }
