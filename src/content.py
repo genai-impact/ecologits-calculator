@@ -39,6 +39,16 @@ the energy consumption and environmental footprint of using generative AI models
 
 ## 🙋 FAQ 
 
+**How we assess the impacts of closed-source models?**
+
+Environmental impacts are calculated based on model architecture and parameter count. For closed-source models, we 
+lack transparency from providers, so we estimate parameter counts using available information. For GPT models, we 
+based our estimates on leaked GPT-4 architecture and scaled parameters count for GPT-4-Turbo and GPT-4o based on 
+pricing differences. For other proprietary models like Anthropic's Claude, we assume similar impacts for models 
+released around the same time with similar performance on public benchmarks. Please note that these estimates are 
+based on assumptions and may not be exact. Our methods are open-source and transparent so you can always see the 
+hypotheses we use.
+
 **Which generative AI models or providers are supported?**
 
 To see the full list of **generative AI providers** currently supported by EcoLogits, see the following 

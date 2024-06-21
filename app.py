@@ -22,7 +22,8 @@ from src.constants import (
     META_MODELS,
     MISTRALAI_MODELS,
     PROMPTS,
-    MODELS
+    CLOSED_SOURCE_MODELS,
+    MODELS,
 )
 from src.utils import (
     format_impacts,
@@ -144,6 +145,12 @@ with gr.Blocks(css=custom_css) as demo:
 
                 # Inference impacts
                 with gr.Blocks():
+                    if f"{provider}/{model}" in CLOSED_SOURCE_MODELS:
+                        with gr.Row():
+                            gr.Markdown("""<p> ⚠️ You've selected a closed-source model; be aware that the impact's 
+                            precision is low due to a lack of transparency from the provider. (see FAQ in About)
+                            </p>""", elem_classes="warning-box")
+
                     with gr.Row():
                         gr.Markdown("""
                         ## Environmental impacts

@@ -56,6 +56,23 @@ PROMPTS = [
 ]
 PROMPTS = [(s + f" ({v} output tokens)", v) for (s, v) in PROMPTS]
 
+CLOSED_SOURCE_MODELS = {
+    "openai/gpt-4o",
+    "openai/gpt-4-turbo",
+    "openai/gpt-4",
+    "openai/gpt-3.5-turbo",
+    "anthropic/claude-3-opus-20240229",
+    "anthropic/claude-3-sonnet-20240229",
+    "anthropic/claude-3-haiku-20240307",
+    "anthropic/claude-2.1",
+    "anthropic/claude-2.0",
+    "anthropic/claude-instant-1.2",
+    "mistralai/mistral-tiny-2312",
+    "mistralai/mistral-small-2402",
+    "mistralai/mistral-medium-2312",
+    "mistralai/mistral-large-2402",
+}
+
 MODELS = [
     ("OpenAI / GPT-4o", "openai/gpt-4o"),
     ("OpenAI / GPT-4-Turbo", "openai/gpt-4-turbo"),
