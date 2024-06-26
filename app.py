@@ -147,8 +147,10 @@ with gr.Blocks(css=custom_css) as demo:
                 with gr.Blocks():
                     if f"{provider}/{model}" in CLOSED_SOURCE_MODELS:
                         with gr.Row():
-                            gr.Markdown("""<p> ⚠️ You've selected a closed-source model; be aware that the impact's 
-                            precision is low due to a lack of transparency from the provider. (see FAQ in About)
+                            gr.Markdown("""<p> ⚠️ You have selected a closed-source model. Please be aware that 
+                            some providers do not fully disclose information about such models. Consequently, our 
+                            estimates have a lower precision for closed-source models. For further details, refer to 
+                            our FAQ in the About section.
                             </p>""", elem_classes="warning-box")
 
                     with gr.Row():
