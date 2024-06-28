@@ -1,2 +1,2 @@
-ecologits>=0.1.7
+ecologits==0.1.7
 pint
