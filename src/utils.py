@@ -148,7 +148,7 @@ def format_gwp_eq_streaming(gwp: Quantity) -> Quantity:
     return streaming_eq
 
 
-def format_energy_eq_electricity_production(energy: Quantity) -> tuple[EnergyProduction, float]:
+def format_energy_eq_electricity_production(energy: Quantity) -> tuple[EnergyProduction, Quantity]:
     electricity_eq = energy * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
     electricity_eq = electricity_eq.to("TWh")
     if electricity_eq > YEARLY_NUCLEAR_ENERGY_EQ:
@@ -157,13 +157,13 @@ def format_energy_eq_electricity_production(energy: Quantity) -> tuple[EnergyPro
     return EnergyProduction.WIND, electricity_eq / YEARLY_WIND_ENERGY_EQ
 
 
-def format_energy_eq_electricity_consumption_ireland(energy: Quantity) -> float:
+def format_energy_eq_electricity_consumption_ireland(energy: Quantity) -> Quantity:
     electricity_eq = energy * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
     electricity_eq = electricity_eq.to("TWh")
     return electricity_eq / YEARLY_IRELAND_ELECTRICITY_CONSUMPTION
 
 
-def format_gwp_eq_airplane_paris_nyc(gwp: Quantity) -> float:
+def format_gwp_eq_airplane_paris_nyc(gwp: Quantity) -> Quantity:
     gwp_eq = gwp * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
     gwp_eq = gwp_eq.to("kgCO2eq")
     return gwp_eq / AIRPLANE_PARIS_NYC_GWP_EQ

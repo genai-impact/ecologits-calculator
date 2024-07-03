@@ -239,21 +239,21 @@ with gr.Blocks(css=custom_css) as demo:
                             name = "Wind turbines"
                         with gr.Column(scale=1, min_width=300):
                             gr.Markdown(f"""
-                            <h2 align="center">{emoji} $$ \Large {count:.0f} $$ {name} <span style="font-size: 12px">(yearly)</span></h2>
+                            <h2 align="center">{emoji} $$ \Large {count.magnitude:.0f} $$ {name} <span style="font-size: 12px">(yearly)</span></h2>
                             <p align="center"><i>Based on electricity consumption<i></p><br>
                             """, latex_delimiters=[{"left": "$$", "right": "$$", "display": False}])
 
                         ireland_count = format_energy_eq_electricity_consumption_ireland(impacts.energy)
                         with gr.Column(scale=1, min_width=300):
                             gr.Markdown(f"""
-                            <h2 align="center">🇮🇪 $$ \Large {ireland_count:.2g} $$ x Ireland <span style="font-size: 12px">(yearly ⚡️ cons.)</span></h2>
+                            <h2 align="center">🇮🇪 $$ \Large {ireland_count.magnitude:.2g} $$ x Ireland <span style="font-size: 12px">(yearly ⚡️ cons.)</span></h2>
                             <p align="center"><i>Based on electricity consumption<i></p><br>
                             """, latex_delimiters=[{"left": "$$", "right": "$$", "display": False}])
 
                         paris_nyc_airplane = format_gwp_eq_airplane_paris_nyc(impacts.gwp)
                         with gr.Column(scale=1, min_width=300):
                             gr.Markdown(f"""
-                            <h2 align="center">✈️ $$ \Large {paris_nyc_airplane:,.0f} $$ Paris ↔ NYC </h2>
+                            <h2 align="center">✈️ $$ \Large {paris_nyc_airplane.magnitude:,.0f} $$ Paris ↔ NYC </h2>
                             <p align="center"><i>Based on GHG emissions<i></p><br>
                             """, latex_delimiters=[{"left": "$$", "right": "$$", "display": False}])
 
