@@ -1,3 +1,6 @@
 gradio
 ecologits==0.1.7
 pint
+beautifulsoup4
+requests
+tiktoken

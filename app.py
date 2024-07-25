@@ -1,5 +1,13 @@
 import gradio as gr
 
+import requests
+from bs4 import BeautifulSoup
+
+import tiktoken
+
+import matplotlib
+import matplotlib.pyplot as plt
+
 from ecologits.tracers.utils import compute_llm_impacts, _avg
 from ecologits.impacts.llm import compute_llm_impacts as compute_llm_impacts_expert
 from ecologits.impacts.llm import IF_ELECTRICITY_MIX_GWP, IF_ELECTRICITY_MIX_ADPE, IF_ELECTRICITY_MIX_PE
@@ -36,6 +44,7 @@ from src.utils import (
 
 CUSTOM = "Custom"
 
+tokenizer = tiktoken.get_encoding('cl100k_base')
 
 def model_list(provider: str) -> gr.Dropdown:
     if provider == "openai":
@@ -78,6 +87,12 @@ def model_list(provider: str) -> gr.Dropdown:
 def custom():
     return CUSTOM
 
+def tiktoken_len(text):
+            tokens = tokenizer.encode(
+                text,
+                disallowed_special=()
+            )
+            return len(tokens)
 
 def model_active_params_fn(model_name: str, n_param: float):
     if model_name == CUSTOM:
@@ -99,7 +114,6 @@ def mix_fn(country_code: str, mix_adpe: float, mix_pe: float, mix_gwp: float):
     if country_code == CUSTOM:
         return mix_adpe, mix_pe, mix_gwp
     return find_electricity_mix(country_code)
-
 
 with gr.Blocks(css=custom_css) as demo:
     gr.Markdown(HERO_TEXT)
@@ -258,8 +272,10 @@ with gr.Blocks(css=custom_css) as demo:
                             """, latex_delimiters=[{"left": "$$", "right": "$$", "display": False}])
 
     with gr.Tab("🤓 Expert Mode"):
+
         with gr.Row():
             gr.Markdown("# 🤓 Expert mode")
+
         model = gr.Dropdown(
             MODELS + [CUSTOM],
             label="Model name",
@@ -351,8 +367,12 @@ with gr.Blocks(css=custom_css) as demo:
             impacts = format_impacts(impacts)
 
             with gr.Blocks():
+                
                 with gr.Row():
-                    gr.Markdown("## Environmental impacts")
+                    gr.Markdown(f"""
+                                <h2 align = "center">Environmental impacts</h2>
+                                """)
+                
                 with gr.Row():
                     with gr.Column(scale=1, min_width=220):
                         gr.Markdown(f"""
@@ -378,6 +398,142 @@ with gr.Blocks(css=custom_css) as demo:
                         $$ \Large {impacts.pe.magnitude:.3g} \ \large {impacts.pe.units} $$
                         <p align="center"><i>Evaluates the use of energy resources<i></p><br>
                         """)
+                        
+                with gr.Blocks():
+                    with gr.Row():
+                        gr.Markdown(f"""
+                                    <h2 align="center">How can location impact the footprint ?</h2>
+                                    """)
+                    with gr.Row():
+                        def create_static_bar_plot():
+                            categories = ['Sweden', 'France', 'Canada', 'USA', 'China', 'Australia', 'India']
+                            values = [46, 81, 238, 679, 1057, 1123, 1583]
+                            
+                            def addlabels(x,y):
+                                for i in range(len(x)):
+                                    plt.text(i, y[i], y[i], ha = 'center')
+                                
+                            fig, ax = plt.subplots(figsize=(15,5), facecolor='#1F2937')
+                            ax.bar(categories, values)
+                            #ax.set_xlabel('Countries')
+                            ax.set_ylabel('GHG emissions (gCO2eq) for 1kWh')
+                            ax.set_title('GWP emissions for 1 kWh of electricity consumption')
+                            ax.set_facecolor("#0B0F19")
+                            
+                            addlabels(categories, values)
+                            
+                            font = {'family' : 'monospace',
+                                    'weight' : 'normal',
+                                    'size'   : 14}
+
+                            matplotlib.rc('font', **font)
+                            matplotlib.rcParams.update({'text.color':'white',
+                                                        'axes.labelcolor':'white',
+                                                        'xtick.color':'white',
+                                                        'ytick.color':'white'})
+
+                            return fig
+                        
+                        static_plot = gr.Plot(value=create_static_bar_plot())
+
+    with gr.Tab("🔍 Evaluate your own usage"):
+
+        with gr.Row():
+            gr.Markdown("""
+                        # 🔍 Evaluate your own usage
+                        ⚠️ For now, only ChatGPT conversation import is available.
+                        You can always try out other models - however results might be inaccurate due to fixed parameters, such as tokenization method.
+                        """)
+        
+        def process_input(text):
+
+            r = requests.get(text, verify=False)
+            
+            soup = BeautifulSoup(r.text, "html.parser")
+            list_text = str(soup).split('parts":["')
+            s = ''
+            for item in list_text[1:int(len(list_text)/2)]:
+                if list_text.index(item)%2 == 1:
+                        s = s + item.split('"]')[0]
+
+            amout_token = tiktoken_len(s)
+
+            return amout_token
+        
+        def compute_own_impacts(amount_token, model):
+            provider = model.split('/')[0].lower()
+            model = model.split('/')[1]
+            impacts = compute_llm_impacts(
+                    provider=provider,
+                    model_name=model,
+                    output_token_count=amount_token,
+                    request_latency=100000
+                )
+            
+            impacts = format_impacts(impacts)
+
+            energy = f"""
+                        <h2 align="center">⚡️ Energy</h2>
+                        $$ \Large {impacts.energy.magnitude:.3g} \ \large {impacts.energy.units} $$
+                        <p align="center"><i>Evaluates the electricity consumption<i></p><br>
+                        """
+            
+            gwp = f"""
+                        <h2 align="center">🌍️ GHG Emissions</h2>
+                        $$ \Large {impacts.gwp.magnitude:.3g} \ \large {impacts.gwp.units} $$
+                        <p align="center"><i>Evaluates the effect on global warming<i></p><br>
+                        """
+            
+            adp = f"""
+                        <h2 align="center">🪨 Abiotic Resources</h2>
+                        $$ \Large {impacts.adpe.magnitude:.3g} \ \large {impacts.adpe.units} $$
+                        <p align="center"><i>Evaluates the use of metals and minerals<i></p><br>
+                        """
+            
+            pe = f"""
+                        <h2 align="center">⛽️ Primary Energy</h2>
+                        $$ \Large {impacts.pe.magnitude:.3g} \ \large {impacts.pe.units} $$
+                        <p align="center"><i>Evaluates the use of energy resources<i></p><br>
+                        """
+
+            return energy, gwp, adp, pe
+        
+        def combined_function(text, model):
+            n_token = process_input(text)
+            energy, gwp, adp, pe = compute_own_impacts(n_token, model)
+            return n_token, energy, gwp, adp, pe
+        
+        with gr.Blocks():
+
+            text_input = gr.Textbox(label="Paste the URL here (must be on https://chatgpt.com/share/xxxx format)")
+            model = gr.Dropdown(
+                                MODELS,
+                                label="Model name",
+                                value="openai/gpt-4o",
+                                filterable=True,
+                                interactive=True
+                            )
+
+            process_button = gr.Button("Estimate this usage footprint")
+            
+            with gr.Accordion("ℹ️ Infos", open=False):
+                n_token = gr.Textbox(label="Total amount of tokens :")
+
+            with gr.Row():
+                with gr.Column(scale=1, min_width=220):
+                    energy = gr.Markdown()
+                with gr.Column(scale=1, min_width=220):
+                    gwp = gr.Markdown()
+                with gr.Column(scale=1, min_width=220):
+                    adp = gr.Markdown()
+                with gr.Column(scale=1, min_width=220):
+                    pe = gr.Markdown()
+
+            process_button.click(
+                fn=combined_function,
+                inputs=[text_input, model],
+                outputs=[n_token, energy, gwp, adp, pe]
+            )
 
     with gr.Tab("📖 Methodology"):
         gr.Markdown(METHODOLOGY_TEXT,
