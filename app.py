@@ -419,7 +419,7 @@ with gr.Blocks(css=custom_css) as demo:
                        sort='y',
                        scale=1,
                        height=250,
-                       min_width=400,
+                       min_width=800,
                        x_title=None,
                        y_title='electricity mix in gCO2eq / kWh')
 
