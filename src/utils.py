@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 
+import pandas as pd
+
 from ecologits.impacts.models import Impacts, Energy, GWP, ADPe, PE
 from pint import UnitRegistry, Quantity
 
@@ -50,6 +52,11 @@ COUNTRIES = [
     ("samoa", 100, 821_632),
 ]
 
+def df_elec_mix_for_plot():
+    return pd.DataFrame({
+                'country': ['Sweden', 'France', 'Canada', 'USA', 'China', 'Australia', 'India'],
+                'electricity_mix': [46, 81, 238, 679, 1057, 1123, 1583]
+            })
 
 # From https://www.runningtools.com/energyusage.htm
 RUNNING_ENERGY_EQ = q("294 kJ / km")     # running 1 km at 10 km/h with a weight of 70 kg
@@ -108,14 +115,22 @@ def format_pe(pe: PE) -> Quantity:
         val = val.to("kJ")
     return val
 
-
 def format_impacts(impacts: Impacts) -> QImpacts:
     return QImpacts(
         energy=format_energy(impacts.energy),
         gwp=format_gwp(impacts.gwp),
         adpe=format_adpe(impacts.adpe),
-        pe=format_pe(impacts.pe),
+        pe=format_pe(impacts.pe)
     )
+
+def format_impacts_expert(impacts: Impacts) -> QImpacts:
+    return QImpacts(
+        energy=format_energy(impacts.energy),
+        gwp=format_gwp(impacts.gwp),
+        adpe=format_adpe(impacts.adpe),
+        pe=format_pe(impacts.pe)
+
+    ), impacts.usage, impacts.embodied
 
 
 def format_energy_eq_physical_activity(energy: Quantity) -> tuple[PhysicalActivity, Quantity]:

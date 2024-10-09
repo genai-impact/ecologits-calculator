@@ -5,9 +5,6 @@ from bs4 import BeautifulSoup
 
 import tiktoken
 
-import matplotlib
-import matplotlib.pyplot as plt
-
 from ecologits.tracers.utils import compute_llm_impacts, _avg
 from ecologits.impacts.llm import compute_llm_impacts as compute_llm_impacts_expert
 from ecologits.impacts.llm import IF_ELECTRICITY_MIX_GWP, IF_ELECTRICITY_MIX_ADPE, IF_ELECTRICITY_MIX_PE
@@ -35,11 +32,13 @@ from src.constants import (
 )
 from src.utils import (
     format_impacts,
+    format_impacts_expert,
     format_energy_eq_physical_activity,
     PhysicalActivity,
     format_energy_eq_electric_vehicle,
     format_gwp_eq_streaming, format_energy_eq_electricity_production, EnergyProduction,
-    format_gwp_eq_airplane_paris_nyc, format_energy_eq_electricity_consumption_ireland
+    format_gwp_eq_airplane_paris_nyc, format_energy_eq_electricity_consumption_ireland,
+    df_elec_mix_for_plot
 )
 
 CUSTOM = "Custom"
@@ -364,10 +363,10 @@ with gr.Blocks(css=custom_css) as demo:
                 if_electricity_mix_adpe=mix_adpe,
                 if_electricity_mix_pe=mix_pe
             )
-            impacts = format_impacts(impacts)
+            impacts, usage, embodied = format_impacts_expert(impacts)
 
             with gr.Blocks():
-                
+				
                 with gr.Row():
                     gr.Markdown(f"""
                                 <h2 align = "center">Environmental impacts</h2>
@@ -380,61 +379,46 @@ with gr.Blocks(css=custom_css) as demo:
                         $$ \Large {impacts.energy.magnitude:.3g} \ \large {impacts.energy.units} $$
                         <p align="center"><i>Evaluates the electricity consumption<i></p><br>
                         """)
+                        
                     with gr.Column(scale=1, min_width=220):
                         gr.Markdown(f"""
                         <h2 align="center">🌍️ GHG Emissions</h2>
                         $$ \Large {impacts.gwp.magnitude:.3g} \ \large {impacts.gwp.units} $$
                         <p align="center"><i>Evaluates the effect on global warming<i></p><br>
+                        $$ \Large {100*usage.gwp.value / (usage.gwp.value + embodied.gwp.value):.3} $$
+                        <p align="center"><i>% of GWP by usage (vs embodied)<i></p><br>
                         """)
+                        
                     with gr.Column(scale=1, min_width=220):
                         gr.Markdown(f"""
                         <h2 align="center">🪨 Abiotic Resources</h2>
                         $$ \Large {impacts.adpe.magnitude:.3g} \ \large {impacts.adpe.units} $$
                         <p align="center"><i>Evaluates the use of metals and minerals<i></p><br>
+                        $$ \Large {100*usage.adpe.value / (usage.adpe.value + embodied.adpe.value):.3} $$
+                        <p align="center"><i>% of ADPE by usage (vs embodied)<i></p><br>
                         """)
+                        
                     with gr.Column(scale=1, min_width=220):
                         gr.Markdown(f"""
                         <h2 align="center">⛽️ Primary Energy</h2>
                         $$ \Large {impacts.pe.magnitude:.3g} \ \large {impacts.pe.units} $$
                         <p align="center"><i>Evaluates the use of energy resources<i></p><br>
+                        $$ \Large {100*usage.pe.value / (usage.pe.value + embodied.pe.value):.3} $$
+                        <p align="center"><i>% of PE by usage (vs embodied)<i></p><br>
                         """)
-                        
-                with gr.Blocks():
-                    with gr.Row():
-                        gr.Markdown(f"""
-                                    <h2 align="center">How can location impact the footprint ?</h2>
-                                    """)
-                    with gr.Row():
-                        def create_static_bar_plot():
-                            categories = ['Sweden', 'France', 'Canada', 'USA', 'China', 'Australia', 'India']
-                            values = [46, 81, 238, 679, 1057, 1123, 1583]
-                            
-                            def addlabels(x,y):
-                                for i in range(len(x)):
-                                    plt.text(i, y[i], y[i], ha = 'center')
-                                
-                            fig, ax = plt.subplots(figsize=(15,5), facecolor='#1F2937')
-                            ax.bar(categories, values)
-                            #ax.set_xlabel('Countries')
-                            ax.set_ylabel('GHG emissions (gCO2eq) for 1kWh')
-                            ax.set_title('GWP emissions for 1 kWh of electricity consumption')
-                            ax.set_facecolor("#0B0F19")
-                            
-                            addlabels(categories, values)
-                            
-                            font = {'family' : 'monospace',
-                                    'weight' : 'normal',
-                                    'size'   : 14}
 
-                            matplotlib.rc('font', **font)
-                            matplotlib.rcParams.update({'text.color':'white',
-                                                        'axes.labelcolor':'white',
-                                                        'xtick.color':'white',
-                                                        'ytick.color':'white'})
-
-                            return fig
-                        
-                        static_plot = gr.Plot(value=create_static_bar_plot())
+        with gr.Row():                
+            gr.Markdown(f"""
+                        <h2 align="center">How can location impact the footprint ?</h2>
+                        """)
+        
+        with gr.Row():     
+            gr.BarPlot(df_elec_mix_for_plot,
+                       x='country',
+                       y='electricity_mix',
+                       sort='y',
+                       x_title=None,
+                       y_title='electricity mix in gCO2eq / kWh')
 
     with gr.Tab("🔍 Evaluate your own usage"):
 
