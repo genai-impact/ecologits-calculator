@@ -141,7 +141,7 @@ def format_energy_eq_physical_activity(energy: Quantity) -> tuple[PhysicalActivi
 
     walking_eq = energy / WALKING_ENERGY_EQ
     if walking_eq < q("1 km"):
-        walking_eq = walking_eq.to("m")
+        walking_eq = walking_eq.to("meter")
     return PhysicalActivity.WALKING, walking_eq
 
 
@@ -149,7 +149,7 @@ def format_energy_eq_electric_vehicle(energy: Quantity) -> Quantity:
     energy = energy.to("kWh")
     ev_eq = energy / EV_ENERGY_EQ
     if ev_eq < q("1 km"):
-        ev_eq = ev_eq.to("m")
+        ev_eq = ev_eq.to("meter")
     return ev_eq
 
 
