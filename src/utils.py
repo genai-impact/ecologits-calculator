@@ -3,7 +3,8 @@ from enum import Enum
 
 import pandas as pd
 
-from ecologits.impacts.models import Impacts, Energy, GWP, ADPe, PE
+from ecologits.impacts.modeling import Impacts, Energy, GWP, ADPe, PE
+from ecologits.tracers.utils import llm_impacts, _avg
 from pint import UnitRegistry, Quantity
 
 
@@ -116,12 +117,24 @@ def format_pe(pe: PE) -> Quantity:
     return val
 
 def format_impacts(impacts: Impacts) -> QImpacts:
-    return QImpacts(
-        energy=format_energy(impacts.energy),
-        gwp=format_gwp(impacts.gwp),
-        adpe=format_adpe(impacts.adpe),
-        pe=format_pe(impacts.pe)
-    )
+    try:
+        impacts.energy.value = (impacts.energy.value.max + impacts.energy.value.min)/2
+        impacts.gwp.value = (impacts.gwp.value.max + impacts.gwp.value.min)/2
+        impacts.adpe.value = (impacts.adpe.value.max + impacts.adpe.value.min)/2
+        impacts.pe.value = (impacts.pe.value.max + impacts.pe.value.min)/2
+        return QImpacts(
+            energy=format_energy(impacts.energy),
+            gwp=format_gwp(impacts.gwp),
+            adpe=format_adpe(impacts.adpe),
+            pe=format_pe(impacts.pe)
+        )
+    except: #when no range
+        return QImpacts(
+            energy=format_energy(impacts.energy),
+            gwp=format_gwp(impacts.gwp),
+            adpe=format_adpe(impacts.adpe),
+            pe=format_pe(impacts.pe)
+        )
 
 def format_impacts_expert(impacts: Impacts) -> QImpacts:
     return QImpacts(

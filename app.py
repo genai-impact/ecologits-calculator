@@ -1,13 +1,7 @@
 import gradio as gr
 
-import requests
-from bs4 import BeautifulSoup
-
-import tiktoken
-
-from ecologits.tracers.utils import compute_llm_impacts, _avg
+from ecologits.tracers.utils import llm_impacts, _avg
 from ecologits.impacts.llm import compute_llm_impacts as compute_llm_impacts_expert
-from ecologits.impacts.llm import IF_ELECTRICITY_MIX_GWP, IF_ELECTRICITY_MIX_ADPE, IF_ELECTRICITY_MIX_PE
 from ecologits.model_repository import models
 
 from src.assets import custom_css
@@ -36,14 +30,16 @@ from src.utils import (
     format_energy_eq_physical_activity,
     PhysicalActivity,
     format_energy_eq_electric_vehicle,
-    format_gwp_eq_streaming, format_energy_eq_electricity_production, EnergyProduction,
-    format_gwp_eq_airplane_paris_nyc, format_energy_eq_electricity_consumption_ireland,
+    format_gwp_eq_streaming,
+    format_energy_eq_electricity_production,
+    EnergyProduction,
+    format_gwp_eq_airplane_paris_nyc,
+    format_energy_eq_electricity_consumption_ireland,
     df_elec_mix_for_plot
 )
+from src.scrapper import process_input
 
 CUSTOM = "Custom"
-
-tokenizer = tiktoken.get_encoding('cl100k_base')
 
 def model_list(provider: str) -> gr.Dropdown:
     if provider == "openai":
@@ -86,28 +82,37 @@ def model_list(provider: str) -> gr.Dropdown:
 def custom():
     return CUSTOM
 
-def tiktoken_len(text):
-            tokens = tokenizer.encode(
-                text,
-                disallowed_special=()
-            )
-            return len(tokens)
-
 def model_active_params_fn(model_name: str, n_param: float):
     if model_name == CUSTOM:
         return n_param
     provider, model_name = model_name.split('/', 1)
     model = models.find_model(provider=provider, model_name=model_name)
-    return model.active_parameters or _avg(model.active_parameters_range)
-
+    try: #moe with range
+        return model.architecture.parameters.active.max
+    except:
+        try: #moe without range
+            return model.architecture.parameters.active
+        except:
+            try: #dense with range
+                return model.architecture.parameters.max
+            except: #dense without range
+                return model.architecture.parameters
 
 def model_total_params_fn(model_name: str, n_param: float):
     if model_name == CUSTOM:
         return n_param
     provider, model_name = model_name.split('/', 1)
     model = models.find_model(provider=provider, model_name=model_name)
-    return model.total_parameters or _avg(model.total_parameters_range)
-
+    try: #moe
+        return model.architecture.parameters.total.max
+    except:
+        try: #dense with range
+            return model.architecture.parameters.max
+        except: #dense without range
+            try:
+                return model.architecture.parameters.total
+            except:
+                return model.architecture.parameters
 
 def mix_fn(country_code: str, mix_adpe: float, mix_pe: float, mix_gwp: float):
     if country_code == CUSTOM:
@@ -148,7 +153,7 @@ with gr.Blocks(css=custom_css) as demo:
             if provider.startswith("huggingface_hub"):
                 provider = provider.split("/")[0]
             if models.find_model(provider, model) is not None:
-                impacts = compute_llm_impacts(
+                impacts = llm_impacts(
                     provider=provider,
                     model_name=model,
                     output_token_count=prompt,
@@ -316,17 +321,17 @@ with gr.Blocks(css=custom_css) as demo:
         )
         input_mix_gwp = gr.Number(
             label="Electricity mix - GHG emissions [kgCO2eq / kWh]",
-            value=IF_ELECTRICITY_MIX_GWP,
+            value=find_electricity_mix('WOR')[2],
             interactive=True
         )
         input_mix_adpe = gr.Number(
             label="Electricity mix - Abiotic resources [kgSbeq / kWh]",
-            value=IF_ELECTRICITY_MIX_ADPE,
+            value=find_electricity_mix('WOR')[0],
             interactive=True
         )
         input_mix_pe = gr.Number(
             label="Electricity mix - Primary energy [MJ / kWh]",
-            value=IF_ELECTRICITY_MIX_PE,
+            value=find_electricity_mix('WOR')[1],
             interactive=True
         )
 
@@ -423,104 +428,89 @@ with gr.Blocks(css=custom_css) as demo:
                        x_title=None,
                        y_title='electricity mix in gCO2eq / kWh')
 
-    with gr.Tab("🔍 Evaluate your own usage"):
+    # with gr.Tab("🔍 Evaluate your own usage"):
 
-        with gr.Row():
-            gr.Markdown("""
-                        # 🔍 Evaluate your own usage
-                        ⚠️ For now, only ChatGPT conversation import is available.
-                        You can always try out other models - however results might be inaccurate due to fixed parameters, such as tokenization method.
-                        """)
+    #     with gr.Row():
+    #         gr.Markdown("""
+    #                     # 🔍 Evaluate your own usage
+    #                     ⚠️ For now, only ChatGPT conversation import is available.
+    #                     You can always try out other models - however results might be inaccurate due to fixed parameters, such as tokenization method.
+    #                     """)
         
-        def process_input(text):
-
-            r = requests.get(text, verify=False)
+    #     def compute_own_impacts(amount_token, model):
+    #         provider = model.split('/')[0].lower()
+    #         model = model.split('/')[1]
+    #         impacts = llm_impacts(
+    #                 provider=provider,
+    #                 model_name=model,
+    #                 output_token_count=amount_token,
+    #                 request_latency=100000
+    #             )
             
-            soup = BeautifulSoup(r.text, "html.parser")
-            list_text = str(soup).split('parts":["')
-            s = ''
-            for item in list_text[1:int(len(list_text)/2)]:
-                if list_text.index(item)%2 == 1:
-                        s = s + item.split('"]')[0]
+    #         impacts = format_impacts(impacts)
 
-            amout_token = tiktoken_len(s)
+    #         energy = f"""
+    #                     <h2 align="center">⚡️ Energy</h2>
+    #                     $$ \Large {impacts.energy.magnitude:.3g} \ \large {impacts.energy.units} $$
+    #                     <p align="center"><i>Evaluates the electricity consumption<i></p><br>
+    #                     """
+            
+    #         gwp = f"""
+    #                     <h2 align="center">🌍️ GHG Emissions</h2>
+    #                     $$ \Large {impacts.gwp.magnitude:.3g} \ \large {impacts.gwp.units} $$
+    #                     <p align="center"><i>Evaluates the effect on global warming<i></p><br>
+    #                     """
+            
+    #         adp = f"""
+    #                     <h2 align="center">🪨 Abiotic Resources</h2>
+    #                     $$ \Large {impacts.adpe.magnitude:.3g} \ \large {impacts.adpe.units} $$
+    #                     <p align="center"><i>Evaluates the use of metals and minerals<i></p><br>
+    #                     """
+            
+    #         pe = f"""
+    #                     <h2 align="center">⛽️ Primary Energy</h2>
+    #                     $$ \Large {impacts.pe.magnitude:.3g} \ \large {impacts.pe.units} $$
+    #                     <p align="center"><i>Evaluates the use of energy resources<i></p><br>
+    #                     """
 
-            return amout_token
+    #         return energy, gwp, adp, pe
         
-        def compute_own_impacts(amount_token, model):
-            provider = model.split('/')[0].lower()
-            model = model.split('/')[1]
-            impacts = compute_llm_impacts(
-                    provider=provider,
-                    model_name=model,
-                    output_token_count=amount_token,
-                    request_latency=100000
-                )
-            
-            impacts = format_impacts(impacts)
-
-            energy = f"""
-                        <h2 align="center">⚡️ Energy</h2>
-                        $$ \Large {impacts.energy.magnitude:.3g} \ \large {impacts.energy.units} $$
-                        <p align="center"><i>Evaluates the electricity consumption<i></p><br>
-                        """
-            
-            gwp = f"""
-                        <h2 align="center">🌍️ GHG Emissions</h2>
-                        $$ \Large {impacts.gwp.magnitude:.3g} \ \large {impacts.gwp.units} $$
-                        <p align="center"><i>Evaluates the effect on global warming<i></p><br>
-                        """
-            
-            adp = f"""
-                        <h2 align="center">🪨 Abiotic Resources</h2>
-                        $$ \Large {impacts.adpe.magnitude:.3g} \ \large {impacts.adpe.units} $$
-                        <p align="center"><i>Evaluates the use of metals and minerals<i></p><br>
-                        """
-            
-            pe = f"""
-                        <h2 align="center">⛽️ Primary Energy</h2>
-                        $$ \Large {impacts.pe.magnitude:.3g} \ \large {impacts.pe.units} $$
-                        <p align="center"><i>Evaluates the use of energy resources<i></p><br>
-                        """
-
-            return energy, gwp, adp, pe
+    #     def combined_function(text, model):
+    #         n_token = process_input(text)
+    #         energy, gwp, adp, pe = compute_own_impacts(n_token, model)
+    #         return n_token, energy, gwp, adp, pe
         
-        def combined_function(text, model):
-            n_token = process_input(text)
-            energy, gwp, adp, pe = compute_own_impacts(n_token, model)
-            return n_token, energy, gwp, adp, pe
-        
-        with gr.Blocks():
+    #     with gr.Blocks():
 
-            text_input = gr.Textbox(label="Paste the URL here (must be on https://chatgpt.com/share/xxxx format)")
-            model = gr.Dropdown(
-                                MODELS,
-                                label="Model name",
-                                value="openai/gpt-4o",
-                                filterable=True,
-                                interactive=True
-                            )
+    #         text_input = gr.Textbox(label="Paste the URL here (must be on https://chatgpt.com/share/xxxx format)")
+    #         model = gr.Dropdown(
+    #                             MODELS,
+    #                             label="Model name",
+    #                             value="openai/gpt-4o",
+    #                             filterable=True,
+    #                             interactive=True
+    #                         )
 
-            process_button = gr.Button("Estimate this usage footprint")
+    #         process_button = gr.Button("Estimate this usage footprint")
             
-            with gr.Accordion("ℹ️ Infos", open=False):
-                n_token = gr.Textbox(label="Total amount of tokens :")
+    #         with gr.Accordion("ℹ️ Infos", open=False):
+    #             n_token = gr.Textbox(label="Total amount of tokens :")
 
-            with gr.Row():
-                with gr.Column(scale=1, min_width=220):
-                    energy = gr.Markdown()
-                with gr.Column(scale=1, min_width=220):
-                    gwp = gr.Markdown()
-                with gr.Column(scale=1, min_width=220):
-                    adp = gr.Markdown()
-                with gr.Column(scale=1, min_width=220):
-                    pe = gr.Markdown()
+    #         with gr.Row():
+    #             with gr.Column(scale=1, min_width=220):
+    #                 energy = gr.Markdown()
+    #             with gr.Column(scale=1, min_width=220):
+    #                 gwp = gr.Markdown()
+    #             with gr.Column(scale=1, min_width=220):
+    #                 adp = gr.Markdown()
+    #             with gr.Column(scale=1, min_width=220):
+    #                 pe = gr.Markdown()
 
-            process_button.click(
-                fn=combined_function,
-                inputs=[text_input, model],
-                outputs=[n_token, energy, gwp, adp, pe]
-            )
+    #         process_button.click(
+    #             fn=combined_function,
+    #             inputs=[text_input, model],
+    #             outputs=[n_token, energy, gwp, adp, pe]
+    #         )
 
     with gr.Tab("📖 Methodology"):
         gr.Markdown(METHODOLOGY_TEXT,

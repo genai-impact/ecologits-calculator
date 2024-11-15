@@ -1,5 +1,5 @@
 gradio
-ecologits==0.1.7
+ecologits==0.5.1
 pint
 beautifulsoup4
 requests
