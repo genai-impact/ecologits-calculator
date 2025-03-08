@@ -1,5 +1,4 @@
-ecologits==0.5.1
+streamlit
+ecologits
 pint
-beautifulsoup4
-requests
-tiktoken
+plotly

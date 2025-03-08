@@ -1,6 +1,0 @@
-gradio
-ecologits==0.5.1
-pint
-beautifulsoup4
-requests
-tiktoken
