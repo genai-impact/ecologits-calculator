@@ -6,6 +6,7 @@ from src.impacts import get_impacts, display_impacts, display_equivalent
 from src.utils import format_impacts
 from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_BOTH
 from src.models import load_models, clean_models_data
+from src.constants import MAIN_MODELS
 
 from src.constants import PROMPTS
 
@@ -13,25 +14,30 @@ def calculator_mode():
 
     with st.container(border=True):
         
-        df = load_models()
+        df = load_models(filter_main=True)
         
         col1, col2, col3 = st.columns(3)
 
         with col1:
-            provider = st.selectbox(label = 'Provider',
-                                    options = [x for x in df['provider_clean'].unique()],
-                                    index = 9)
-            provider_raw = df[df['provider_clean'] == provider]['provider'].values[0]
+            provider = st.selectbox(
+                label = 'Provider',
+                options = [x for x in df['provider_clean'].unique()],
+                index = 7
+            )
 
         with col2:
-            model = st.selectbox('Model', [x for x in df['name_clean'].unique() if x in df[df['provider_clean'] == provider]['name_clean'].unique()])
-            model_raw = df[(df['provider_clean'] == provider) & (df['name_clean'] == model)]['name'].values[0]
+            model = st.selectbox(
+                label = 'Model',
+                options = [x for x in df['name_clean'].unique() if x in df[df['provider_clean'] == provider]['name_clean'].unique()]
+            )
 
         with col3:
             output_tokens = st.selectbox('Example prompt', [x[0] for x in PROMPTS])
             
         # WARNING DISPLAY
-        
+        provider_raw = df[(df['provider_clean'] == provider) & (df['name_clean'] == model)]['provider'].values[0]
+        model_raw = df[(df['provider_clean'] == provider) & (df['name_clean'] == model)]['name'].values[0]
+
         df_filtered = df[(df['provider_clean'] == provider) & (df['name_clean'] == model)]
 
         if df_filtered['warning_arch'].values[0] and not df_filtered['warning_multi_modal'].values[0]:
@@ -42,6 +48,7 @@ def calculator_mode():
             st.warning(WARNING_BOTH)
             
     try:
+
         impacts = llm_impacts(
                         provider=provider_raw,
                         model_name=model_raw,
