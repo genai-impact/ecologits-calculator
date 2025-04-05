@@ -32,6 +32,8 @@ def clean_models_data(df, with_filter = True):
     
     df['architecture_type'] = df['architecture'].apply(lambda x: x['type'])
     df['architecture_parameters'] = df['architecture'].apply(lambda x: x['parameters'])
+    df['total_parameters'] = df['architecture_parameters'].apply(lambda x: x['total'] if isinstance(x, dict) and 'total' in x.keys() else x)
+    df['active_parameters'] = df['architecture_parameters'].apply(lambda x: x['active'] if isinstance(x, dict) and 'active' in x.keys() else x)
     
     df['warnings'] = df['warnings'].apply(lambda x: ', '.join(x) if x else None).fillna('none')
     df['warning_arch'] = df['warnings'].apply(lambda x: 'model-arch-not-released' in x)
@@ -39,8 +41,8 @@ def clean_models_data(df, with_filter = True):
 
     if with_filter == True:
         df = df[df['name'].isin(models_to_keep)]
-    
-    return df[['provider', 'provider_clean', 'name', 'name_clean', 'architecture_type', 'architecture_parameters', 'warning_arch', 'warning_multi_modal']]
+        
+    return df[['provider', 'provider_clean', 'name', 'name_clean', 'architecture_type', 'architecture_parameters', 'total_parameters', 'active_parameters', 'warning_arch', 'warning_multi_modal']]
 
 @st.cache_data
 def load_models(filter_main = True):

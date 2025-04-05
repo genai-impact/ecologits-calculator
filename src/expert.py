@@ -1,12 +1,11 @@
 import streamlit as st
-import pandas as pd
 from ecologits.impacts.llm import compute_llm_impacts
 
-from src.utils import format_impacts, average_range_impacts, format_impacts_expert, model_active_params_fn, model_total_params_fn
+from src.utils import format_impacts, average_range_impacts
 from src.impacts import display_impacts
-#from src.constants import PROVIDERS, MODELS
 from src.electricity_mix import COUNTRY_CODES, find_electricity_mix, dataframe_electricity_mix
-from ecologits.model_repository import models
+from src.models import load_models
+from src.constants import PROMPTS
 
 import plotly.express as px
 
@@ -21,35 +20,56 @@ def expert_mode():
 
         ########## Model info ##########
 
-        # col1, col2, col3 = st.columns(3)
-
-        # with col1:
-        #     provider = st.selectbox(label = 'Provider expert',
-        #                             options = [x[0] for x in PROVIDERS],
-        #                             index = 0)
-        #     provider = [x[1] for x in PROVIDERS if x[0] == provider][0]
-        #     if 'huggingface_hub' in provider:
-        #         provider = 'huggingface_hub'
+        col1, col2, col3 = st.columns(3)
         
-        # with col2:
-        #     model = st.selectbox('Model expert', [x[0] for x in MODELS if provider in x[1]])
-        #     model = [x[1] for x in MODELS if x[0] == model][0].split('/', 1)[1]
+        df = load_models(filter_main=True)
+
+        with col1:
+            provider_exp = st.selectbox(
+                label = 'Provider',
+                options = [x for x in df['provider_clean'].unique()],
+                index = 7,
+                key = 1
+            )
+
+        with col2:
+            model_exp = st.selectbox(
+                label = 'Model',
+                options = [x for x in df['name_clean'].unique() if x in df[df['provider_clean'] == provider_exp]['name_clean'].unique()],
+                key = 2
+            )
+
+        with col3:
+            output_tokens_exp = st.selectbox(
+                label = 'Example prompt',
+                options = [x[0] for x in PROMPTS],
+                key = 3
+            )
+        
+        df_filtered = df[(df['provider_clean'] == provider_exp) & (df['name_clean'] == model_exp)]
+
+        try:
+            total_params = int(df_filtered['total_parameters'].iloc[0])
+        except:
+            total_params = int((df_filtered['total_parameters'].values[0]['min'] + df_filtered['total_parameters'].values[0]['max'])/2)
+            
+        try:
+            active_params = int(df_filtered['active_parameters'].iloc[0])
+        except:
+            active_params = int((df_filtered['active_parameters'].values[0]['min'] + df_filtered['active_parameters'].values[0]['max'])/2)
 
         ########## Model parameters ##########   
 
         col11, col22, col33 = st.columns(3)
 
         with col11:
-            # st.write(provider, model)
-            # st.write(models.find_model(provider, model))
-            # st.write(model_active_params_fn(provider, model, 45))
-            active_params = st.number_input('Active parameters (B)', 0, None, 45)
+            active_params = st.number_input('Active parameters (B)', 0, None, active_params)
 
         with col22:
-            total_params = st.number_input('Total parameters (B)', 0, None, 45)
+            total_params = st.number_input('Total parameters (B)', 0, None, total_params)
 
         with col33:
-            output_tokens = st.number_input('Output completion tokens', 100)
+            output_tokens = st.number_input('Output completion tokens', [x[1] for x in PROMPTS if x[0] == output_tokens_exp][0])
 
         ########## Electricity mix ##########
 
@@ -89,15 +109,16 @@ def expert_mode():
         st.markdown('The usage impacts account for the electricity consumption of the model while the embodied impacts account for resource extraction (e.g., minerals and metals), manufacturing, and transportation of the hardware.')
         
         col_ghg_comparison, col_adpe_comparison, col_pe_comparison = st.columns(3)
-
+        
         with col_ghg_comparison:
+
             fig_gwp = px.pie(
-                values = [average_range_impacts(usage.gwp.value), average_range_impacts(embodied.gwp.value)],
-                names = ['usage', 'embodied'],
-                title = 'GHG emissions',
-                color_discrete_sequence=["#636EFA", "#00CC96"],
-                width = 100
-                )
+            values = [average_range_impacts(usage.gwp.value), average_range_impacts(embodied.gwp.value)],
+            names = ['usage', 'embodied'],
+            title = 'GHG emissions',
+            color_discrete_sequence=["#00BF63", "#0B3B36"],
+            width = 100
+            )
             fig_gwp.update_layout(showlegend=False, title_x=0.5)
 
             st.plotly_chart(fig_gwp)
@@ -107,11 +128,10 @@ def expert_mode():
                 values = [average_range_impacts(usage.adpe.value), average_range_impacts(embodied.adpe.value)],
                 names = ['usage', 'embodied'],
                 title = 'Abiotic depletion',
-                color_discrete_sequence=["#00CC96","#636EFA"],
+                color_discrete_sequence=["#0B3B36","#00BF63"],
                 width = 100)
             fig_adpe.update_layout(
-                showlegend=True,
-                legend=dict(yanchor="bottom", x = 0.35, y = -0.1),
+                showlegend=False,
                 title_x=0.5)
             
             st.plotly_chart(fig_adpe)
@@ -121,7 +141,7 @@ def expert_mode():
                 values = [average_range_impacts(usage.pe.value), average_range_impacts(embodied.pe.value)],
                 names = ['usage', 'embodied'],
                 title = 'Primary energy',
-                color_discrete_sequence=["#636EFA", "#00CC96"],
+                color_discrete_sequence=["#00BF63", "#0B3B36"],
                 width = 100)
             fig_pe.update_layout(showlegend=False, title_x=0.5)
 
@@ -139,16 +159,23 @@ def expert_mode():
 
         try:
 
-            df = dataframe_electricity_mix(countries_to_compare)
+            df_comp = dataframe_electricity_mix(countries_to_compare)
 
             impact_type = st.selectbox(
                 label='Select an impact type to compare',
-                options=[x for x in df.columns if x!='country'],
+                options=[x for x in df_comp.columns if x!='country'],
                 index=1)
 
-            df.sort_values(by = impact_type, inplace = True)
-
-            fig_2 = px.bar(df, x = df.index, y = impact_type, text = impact_type, color = impact_type)
+            df_comp.sort_values(by = impact_type, inplace = True)
+            
+            fig_2 = px.bar(
+                df_comp,
+                x = df_comp.index,
+                y = impact_type,
+                text = impact_type,
+                color = impact_type
+            )
+            
             st.plotly_chart(fig_2)
 
         except:

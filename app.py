@@ -55,7 +55,7 @@ with tab_method:
 
 with tab_about:
 
-    st.write(ABOUT_TEXT)
+    st.markdown(ABOUT_TEXT, unsafe_allow_html=True)
 
 with st.expander('📚 Citation'):
     st.html(CITATION_LABEL)

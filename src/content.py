@@ -4,11 +4,16 @@ HERO_TEXT = """
     <img style="max-height: 80px" alt="EcoLogits" src="https://raw.githubusercontent.com/genai-impact/ecologits/main/docs/assets/logo_light.png">
   </a>
 </div>
-<h1 align="center">🧮 EcoLogits Calculator</h1>
 <div align="center">
   <p style="max-width: 500px; text-align: center">
     <i><b>EcoLogits</b> is a python library that tracks the <b>energy consumption</b> and <b>environmental 
     footprint</b> of using <b>generative AI</b> models through APIs.</i>
+  </p>
+</div>
+<h1 align="center">🧮 EcoLogits Calculator</h1>
+<div align="center">
+  <p style="max-width: 500px; text-align: center">
+    <i>allows a broader access to <b>EcoLogits</b> through a visual application.</i>
   </p>
 </div>
 <br>
@@ -111,12 +116,14 @@ EcoLogits is focused on estimating the environmental impacts of generative AI (o
 providers (such as OpenAI, Anthropic, Cloud APIs...)** whereas  CodeCarbon is more general tool to measure energy 
 consumption and estimate GHG emissions measurement. If you deploy LLMs locally we encourage you to use CodeCarbon to 
 get real numbers of your energy consumption.
+
 ## 🤗 Contributing 
 We are eager to get feedback from the community, don't hesitate to engage the discussion with us on this 
 [GitHub thread](https://github.com/genai-impact/ecologits/discussions/45) or message us on 
 [LinkedIn](https://www.linkedin.com/company/genai-impact/).
 We also welcome any open-source contributions on 🌱 **[EcoLogits](https://github.com/genai-impact/ecologits)** or on 
 🧮 **EcoLogits Calculator**.
+
 ## ⚖️ License
 <p xmlns:cc="http://creativecommons.org/ns#" >
   This work is licensed under 
@@ -127,12 +134,14 @@ We also welcome any open-source contributions on 🌱 **[EcoLogits](https://gith
   <img style="display:inline-block;height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt="">
   <img style="display:inline-block;height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt="">
 </p>
+
 ## 🙌 Acknowledgement
 We thank [Data For Good](https://dataforgood.fr/) and [Boavizta](https://boavizta.org/en) for supporting the 
 development of this project. Their contributions of tools, best practices, and expertise in environmental impact 
 assessment have been invaluable.
 We also extend our gratitude to the open-source contributions of 🤗 [Hugging Face](huggingface.com) on the LLM-Perf 
 Leaderboard.
+
 ## 🤝 Contact
 For general question on the project, please use the [GitHub thread](https://github.com/genai-impact/ecologits/discussions/45). 
 Otherwise use our contact form on [genai-impact.org/contact](https://genai-impact.org/contact/).

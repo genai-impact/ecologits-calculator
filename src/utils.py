@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
 
-import pandas as pd
 from ecologits.model_repository import models
 from ecologits.impacts.modeling import Impacts, Energy, GWP, ADPe, PE
 #from ecologits.tracers.utils import llm_impacts
@@ -91,12 +90,6 @@ IRELAND_POPULATION_MILLION = 5
 # From https://impactco2.fr/outils/comparateur?value=1&comparisons=&equivalent=avion-pny
 AIRPLANE_PARIS_NYC_GWP_EQ = q("177000 kgCO2eq")
 
-def filter_models(provider, list_models):
-
-    model = 1
-
-    return model
-
 #####################################################################################
 ### IMPACTS FORMATING
 #####################################################################################
@@ -146,8 +139,12 @@ def format_impacts(impacts: Impacts) -> QImpacts:
 def split_impacts_u_e(impacts: Impacts) -> QImpacts:
     return impacts.usage, impacts.embodied
 
-def average_range_impacts(RangeValue):
-    return (RangeValue.max + RangeValue.min)/2
+def average_range_impacts(x):
+    
+    if isinstance(x, float):
+        return x 
+    else:
+        return (x.max + x.min)/2
 
 def format_impacts_expert(impacts: Impacts, display_range: bool) -> QImpacts:
     
@@ -219,44 +216,4 @@ def format_energy_eq_electricity_consumption_ireland(energy: Quantity) -> Quanti
 def format_gwp_eq_airplane_paris_nyc(gwp: Quantity) -> Quantity:
     gwp_eq = gwp * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
     gwp_eq = gwp_eq.to("kgCO2eq")
-    return gwp_eq / AIRPLANE_PARIS_NYC_GWP_EQ
-
-#####################################################################################
-### MODELS PARAMETERS
-#####################################################################################
-
-def model_active_params_fn(provider_name: str, model_name: str, n_param: float):
-    if model_name == 'CUSTOM':
-        return n_param
-    else:
-        model = models.find_model(provider=provider_name, model_name=model_name)
-
-        if model.architecture == 'moe':
-            try:
-                return model.architecture.parameters.active.max
-            except:
-                try:
-                    return model.architecture.parameters.active
-                except:
-                    return model.architecture.parameters
-        elif model.architecture == 'dense':
-            try: #dense with range
-                return model.architecture.parameters.max
-            except: #dense without range
-                return model.architecture.parameters
-
-def model_total_params_fn(provider_name: str, model_name: str, n_param: float):
-    if model_name == 'CUSTOM':
-        return n_param
-    provider, model_name = model_name.split('/', 1)
-    model = models.find_model(provider=provider, model_name=model_name)
-    try: #moe
-        return model.architecture.parameters.total.max
-    except:
-        try: #dense with range
-            return model.architecture.parameters.max
-        except: #dense without range
-            try:
-                return model.architecture.parameters.total
-            except:
-                return model.architecture.parameters
+    return gwp_eq / AIRPLANE_PARIS_NYC_GWP_EQ####################################################################################### MODELS PARAMETER####################################################################################

@@ -1,12 +1,10 @@
 import streamlit as st
-import pandas as pd
 
 from ecologits.tracers.utils import llm_impacts
 from src.impacts import get_impacts, display_impacts, display_equivalent
 from src.utils import format_impacts
 from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_BOTH
-from src.models import load_models, clean_models_data
-from src.constants import MAIN_MODELS
+from src.models import load_models
 
 from src.constants import PROMPTS
 
