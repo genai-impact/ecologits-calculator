@@ -69,7 +69,11 @@ def expert_mode():
             total_params = st.number_input('Total parameters (B)', 0, None, total_params)
 
         with col33:
-            output_tokens = st.number_input('Output completion tokens', [x[1] for x in PROMPTS if x[0] == output_tokens_exp][0])
+            output_tokens = st.number_input(
+                label = 'Output completion tokens',
+                min_value = 0,
+                value = [x[1] for x in PROMPTS if x[0] == output_tokens_exp][0]
+            )
 
         ########## Electricity mix ##########
 
