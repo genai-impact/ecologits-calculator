@@ -72,7 +72,7 @@ ABOUT_TEXT = r"""
 The rapid evolution of generative AI is reshaping numerous industries and aspects of our daily lives. While these 
 advancements offer some benefits, they also **pose substantial environmental challenges that cannot be overlooked**. 
 Plus the issue of AI's environmental footprint has been mainly discussed at training stage but rarely at the inference 
-stage. That is an issue because **inference impacts for LLMs can largely overcome the training impacts when deployed 
+stage. That is an issue because **inference impacts for large langauge models (LLMs) can largely overcome the training impacts when deployed 
 at large scales**.
 At **[GenAI Impact](https://genai-impact.org/) we are dedicated to understanding and mitigating the environmental 
 impacts of generative AI** through rigorous research, innovative tools, and community engagement. Especially, in early 
@@ -146,38 +146,56 @@ Leaderboard.
 For general question on the project, please use the [GitHub thread](https://github.com/genai-impact/ecologits/discussions/45). 
 Otherwise use our contact form on [genai-impact.org/contact](https://genai-impact.org/contact/).
 """
-
+#TODO ajoute des mots sur water use. embodied vs per request use
+#TODO ajuster la partie sur embodied electricité. c'est pas du tout clair
 
 METHODOLOGY_TEXT = r"""
 ## 📖 Methodology
 We have developed a methodology to **estimate the energy consumption and environmental impacts for an LLM inference** 
 based on request parameters and hypotheses on the data center location, the hardware used, the model architecture and
 more.
-In this section we will only cover the principles of the methodology related to the 🧮 **EcoLogits Calculator**. If 
-you wish to learn more on the environmental impacts modeling of an LLM request checkout the 
+In this section, we will only cover the principles of the methodology related to the 🧮 **EcoLogits Calculator**. If 
+you would like to learn more about the environmental impacts modeling of an LLM request, consider checking out the 
 🌱 [EcoLogits documentation page](https://ecologits.ai/methodology/).
 ### Modeling impacts of an LLM request
-The environmental impacts of an LLM inference are split into the **usage impacts** $I_{request}^u$ to account for 
-electricity consumption and the **embodied impacts** $I_{request}^e$ that relates to resource extraction, hardware 
-manufacturing and transportation. In general terms it can be expressed as follow:
+The environmental impacts of an LLM inference are split into **usage impacts** $I_{request}^u$ to account for 
+electricity consumption and **embodied impacts** $I_{request}^e$ that relate to resource extraction, hardware 
+manufacturing and transportation. It can be expressed as the following:
 $$ I_{request} = I_{request}^u  + I_{request}^e $$
 $$ I_{request} = E_{request}*F_{em}+\frac{\Delta T}{\Delta L}*I_{server}^e $$
-With,
+Where
 * $E_{request}$ the estimated energy consumption of the server and its cooling system.
 * $F_{em}$ the electricity mix that depends on the country and time.
 * $\frac{\Delta T}{\Delta L}$ the hardware usage ratio i.e. the computation time over the lifetime of the hardware.
 * $I_{server}^e$ the embodied impacts of the server.
-Additionally, to ⚡️ **direct energy consumption** the environmental impacts are expressed in **three dimensions 
-(multi-criteria impacts)** that are:
-* 🌍 **Global Warming Potential** (GWP): Potential impact on global warming in kgCO2eq (commonly known as GHG/carbon 
-emissions).
-* 🪨 **Abiotic Depletion Potential for Elements** (ADPe): Impact on the depletion of non-living resources such as 
-minerals or metals in kgSbeq.
-* ⛽️ **Primary Energy** (PE): Total energy consumed from primary sources in MJ.
+
+Additionally, the environmental impacts are expressed in **four dimensions 
+(multi-criteria impacts)**:
+* 🌍 **Global Warming Potential** (GWP): Potential impact on global warming in kilograms of CO2 equivalent, 
+or kgCO2eq, also commonly known as green house gases (GHG) or carbon emissions.
+* 🪨 **Abiotic Depletion Potential for Elements** (ADPe): Mesures the impact on the depletion of non-organic resources such as 
+minerals or metals in kilograms of antimony equivalent. This is to say the impact equating to that amount of antimony extracted.
+* ⛽️ **Primary Energy** (PE): Total energy consumed from primary sources in megajoules.
+* 💧 **Water Use** : Water consumption from this request. The formula for quantifying this is:
+$$
+WCF_{request} = E_{\text{server}} \times \left( \text{WUE}_{\text{on-site}} + \text{PUE} \times \text{WUE}_{\text{off-site}} \right) + \color{orange}{\frac{\Delta T \times {WCF}_{embodied}}{\Delta L \times N_{requests}} }
+$$
+Where
+* $WCF_{request}$ : Water consumption footprint for the request
+* $E_{\text{server}}$ : Energy cost at the server for the request 
+* $WUE_{on-site}$ : Water usage efficiency at the data center 
+* $PUE$: Power usage efficiency at the data center 
+* $WUE_{off-site}$ : Water usage efficiency of the local electricity mix 
+* $\color{orange}{\Delta T}$ : Generation latency, or the time it takes for the server to process the request, in seconds
+* $\color{orange}{\Delta L}$ : Server lifespan in seconds
+* $\color{orange}{N_{requests}}$ : Number of simultanous reqeusts handled by the server
+* $\color{orange}{WCF_{embodied}}$ : Embodied water consumption footprint for manufacturing the server
+
+The variables in $\color{orange}{orange}$ represent the embodied water consumption and are not presently integrated into the calculations due to the lack of data. According to many sources, once integrated, they could double or more our water consumption estimation.
 ### Principles, Data and Hypotheses
-We use a **bottom-up methodology** to model impacts, meaning that we will estimate the impacts of low-level physical 
-components to then estimate the impacts at software level (in that case an LLM inference). We also rely on **Life 
-Cycle Approach (LCA) proxies and approach** to model both usage and embodied phases with multi-criteria impacts. 
+We use a **bottom-up methodology** to model impacts, meaning that we estimate the impacts of low-level physical 
+components to then estimate the impacts at software level (in our case an LLM inference). We also rely on **Life 
+Cycle Approach (LCA) proxies** to model both usage and embodied phases with multi-criteria impacts. 
 If you are interested in this approach we recommend you to read the following [Boavizta](https://boavizta.org/) 
 resources.
 * [Digital & environment: How to evaluate server manufacturing footprint, beyond greenhouse gas emissions?](https://boavizta.org/en/blog/empreinte-de-la-fabrication-d-un-serveur) 
@@ -189,14 +207,16 @@ and latency based on the model architecture and number of output tokens.
 * [Boavizta API](https://github.com/Boavizta/boaviztapi) to estimate server embodied impacts and base energy 
 consumption.
 * [ADEME Base Empreinte®](https://base-empreinte.ademe.fr/) for electricity mix impacts per country.
+* [World Resource Institute](https://www.wri.org/research/guidance-calculating-water-use-embedded-purchased-electricity) for the water withdrawal factor (WWF) and water consumption factor (WCF) for different countries. 
+* [Various sources from companies' sustainability reports](https://docs.google.com/spreadsheets/d/1XvKNhqJJ3e0wlUlSOcv-HS8jIwjCJBEQYgNhkVwA7ac/edit?usp=sharing) for their on-site water usage efficiencies and power usage efficiencies.
 Finally here are the **main hypotheses** we have made to compute the impacts.
 * ⚠️ **We *"guesstimate"* the model architecture of proprietary LLMs when not disclosed by the provider.** 
 * Production setup: quantized models running on data center grade servers and GPUs such as A100.
 * Electricity mix does not depend on time (help us enhance EcoLogits and work on this [issue](https://github.com/genai-impact/ecologits/issues/42))
-* Ignore the following impacts: unused cloud resources, data center building, network and end-user devices... (for now)
+* We are ignoring the following impacts: unused cloud resources, data center building, network and end-user devices... (for now)
 ## Equivalents
 We have integrated impact equivalents to help people better understand the impacts and have reference points for 
-standard use cases and everyday activities.
+standard use cases in everyday activities.
 ### Request impacts
 These equivalents are computed based on the request impacts only.
 #### 🚶‍♂️‍➡️ Walking or 🏃‍♂️‍➡️ running distance
@@ -206,8 +226,8 @@ physical activity (for someone weighing 70kg):
 * 🚶‍♂️‍➡️ walking: $ 196\ kJ/km $ (speed of $ 3\ km/h $)
 * 🏃‍♂️‍➡️ running: $ 294\ kJ/km $ (speed of $ 10\ km/h $)
 We divide the request energy consumption by these values to compute the distance traveled. 
-#### 🔋 Electric Vehicle distance
-We compare the ⚡️ direct energy consumption with the energy consumer by a EV car. From 
+#### 🔋 Electric vehicle distance
+We compare the ⚡️ direct energy consumption with the energy consumer by an EV car. From 
 [selectra.info](https://selectra.info/energie/actualites/insolite/consommation-vehicules-electriques-france-2040) or 
 [tesla.com](https://www.tesla.com/fr_fr/support/power-consumption) we consider an average value of energy consumed per 
 kilometer of: $ 0.17\ kWh/km $.
@@ -217,37 +237,41 @@ We compare the 🌍 GHG emissions of the request and of streaming a video. From
 [impactco2.fr](https://impactco2.fr/outils/comparateur?value=1&comparisons=streamingvideo), we consider that 
 $ 1\ kgCO2eq $ is equivalent to $ 15.6\ h $ of streaming.
 We multiply that value by the GHG emissions of the request to get an equivalent in hours of video streaming.
+#### 🚰 Bottled waters
+We compare the water consumption to a standard 75cL water bottle. 
 ### Scaled impacts
 These equivalents are computed based on the request impacts scaled to a worldwide adoption use case. We imply that the
-same request is done 1% of the planet everyday for 1 year, and then compute impact equivalents.
+same request is done by 1% of the world population everyday for 1 year, and then compute impact equivalents.
 $$
-I_{scaled} = I_{request} * [1 \\% \ \text{of}\ 8B\ \text{people on earth}] * 365\ \text{days}
+I_{scaled} = I_{request} * [1 \% \ \text{of 8 billion people on earth}] * 365\ \text{days}
 $$
 #### Number of 💨 wind turbines or ☢️ nuclear plants
-We compare the ⚡️ direct energy consumption (scaled) by the energy production of wind turbines and nuclear power 
+We compare the ⚡️ scaled direct energy consumption by the energy production of wind turbines and nuclear power 
 plants. From [ecologie.gouv.fr](https://www.ecologie.gouv.fr/eolien-terrestre) we consider that a $ 2\ MW $ wind 
 turbine produces $ 4.2\ GWh $ a year. And from [edf.fr](https://www.edf.fr/groupe-edf/espaces-dedies/jeunes-enseignants/pour-les-jeunes/lenergie-de-a-a-z/produire-de-lelectricite/le-nucleaire-en-chiffres) 
 we learn that a $ 900\ MW $ nuclear power plant produces $ 6\ TWh $ a year.
 We divide the scaled energy consumption by these values to get the number of wind turbines or nuclear power plants 
 needed.
 #### Multiplier of 🇮🇪 Ireland electricity consumption
-We compare the ⚡️ direct energy consumption (scaled) by the electricity consumption of Ireland per year. From 
+We compare the ⚡️ scaled direct energy consumption by the electricity consumption of Ireland per year. From 
 [wikipedia.org](https://en.wikipedia.org/wiki/List_of_countries_by_electricity_consumption) we consider the Ireland 
 electricity consumption to be $ 33\ TWh $ a year for a population of 5M.
-We divide the scaled energy consumption by this value to get the equivalent number of "Ireland countries".
+We divide the scaled energy consumption by this value to get the equivalent number of "Irelands".
 #### Number of ✈️ Paris ↔ New York City flights
-We compare the 🌍 GHG emissions (scaled) of the request and of a return flight Paris ↔ New York City. From 
+We compare the 🌍 scaled GHG emissions of the request and of a return flight Paris ↔ New York City. From 
 [impactco2.fr](https://impactco2.fr/outils/comparateur?value=1&comparisons=&equivalent=avion-pny) we consider that a 
 return flight Paris → New York City → Paris for one passenger emits $ 1,770\ kgCO2eq $ and we consider an overall 
 average load of 100 passengers per flight.
 We divide the scaled GHG emissions by this value to get the equivalent number of return flights.
-
+#### Number of Olympic-sized swimming pools 🏊🏼
+We compare the scaled water consumption to the number of Olympic-sized swimming pools it can fill. According to the [Phinizy Center for Water Sciences](https://phinizycenter.org/olympic-swimming-pools/), 
+an Olympic-sized swimming pool holds about 2.5 million liters of water.
 #### If you are motivated to help us test and enhance this methodology [contact us](https://genai-impact.org/contact/)! 💪
 """
 
 CITATION_LABEL = "BibTeX citation for EcoLogits Calculator and the EcoLogits library:"
 CITATION_TEXT = r"""@misc{ecologits-calculator,
-  author={Samuel Rincé, Adrien Banse and Valentin Defour},
+  author={Samuel Rincé, Adrien Banse, Valentin Defour, and Chieh Hsu},
   title={EcoLogits Calculator},
   year={2025},
   howpublished= {\url{https://huggingface.co/spaces/genai-impact/ecologits-calculator}},

@@ -82,12 +82,28 @@ def expert_mode():
         col4, col5, col6 = st.columns(3)
 
         with col4:
-            mix_gwp = st.number_input('Electricity mix - GHG emissions [kgCO2eq / kWh]', find_electricity_mix([x[1] for x in COUNTRY_CODES if x[0] ==location][0])[2], format="%0.6f")
+            try:
+                mix_gwp = st.number_input('Electricity mix - GHG emissions [kgCO2eq / kWh]', float(find_electricity_mix([x[1] for x in COUNTRY_CODES if x[0] ==location][0])[2]), format="%0.6f")
             #disp_ranges = st.toggle('Display impact ranges', False)
+
+            except: 
+                mix_gwp = st.number_input('Electricity mix - GHG emissions [kgCO2eq / kWh]', float(find_electricity_mix(["WOR"][0])[2]), format="%0.6f")
+                st.warning(f"Lacking data on {location}, showing global average data.")
+
         with col5:
-            mix_adpe = st.number_input('Electricity mix - Abiotic resources [kgSbeq / kWh]', find_electricity_mix([x[1] for x in COUNTRY_CODES if x[0] ==location][0])[0], format="%0.13f")
+            try:
+                mix_adpe = st.number_input('Electricity mix - Abiotic resources [kgSbeq / kWh]', float(find_electricity_mix([x[1] for x in COUNTRY_CODES if x[0] ==location][0])[0]), format="%0.13f")
+            except:
+                mix_adpe = st.number_input('Electricity mix - Abiotic resources [kgSbeq / kWh]', float(find_electricity_mix(["WOR"][0])[0]), format="%0.13f")
+                st.warning(f"Lacking data on {location}, showing global average data.")
+
         with col6:
-            mix_pe = st.number_input('Electricity mix - Primary energy [MJ / kWh]', find_electricity_mix([x[1] for x in COUNTRY_CODES if x[0] ==location][0])[1], format="%0.3f")
+            try: 
+                mix_pe = st.number_input('Electricity mix - Primary energy [MJ / kWh]', float(find_electricity_mix([x[1] for x in COUNTRY_CODES if x[0] ==location][0])[1]), format="%0.3f")
+            except: 
+                mix_pe = st.number_input('Electricity mix - Primary energy [MJ / kWh]', float(find_electricity_mix(["WOR"][0])[1]), format="%0.3f")
+                st.warning(f"Lacking data on {location}, showing global average data.")
+
 
     impacts = compute_llm_impacts(model_active_parameter_count=active_params,
                 model_total_parameter_count=total_params,
@@ -104,7 +120,7 @@ def expert_mode():
 
         st.markdown('<h3 align="center">Environmental Impacts</h2>', unsafe_allow_html = True)
 
-        display_impacts(impacts)
+        display_impacts(impacts, provider_exp, location)
 
     with st.expander('⚖️ Usage vs Embodied'):
 
@@ -121,9 +137,11 @@ def expert_mode():
             names = ['usage', 'embodied'],
             title = 'GHG emissions',
             color_discrete_sequence=["#00BF63", "#0B3B36"],
-            width = 100
+            width = 400
             )
-            fig_gwp.update_layout(showlegend=False, title_x=0.5)
+            fig_gwp.update_layout(
+                showlegend=False, 
+                title_x=0.25)
 
             st.plotly_chart(fig_gwp)
 
@@ -133,10 +151,11 @@ def expert_mode():
                 names = ['usage', 'embodied'],
                 title = 'Abiotic depletion',
                 color_discrete_sequence=["#0B3B36","#00BF63"],
-                width = 100)
+                width = 400
+                )
             fig_adpe.update_layout(
                 showlegend=False,
-                title_x=0.5)
+                title_x=0.25)
             
             st.plotly_chart(fig_adpe)
 
@@ -146,8 +165,11 @@ def expert_mode():
                 names = ['usage', 'embodied'],
                 title = 'Primary energy',
                 color_discrete_sequence=["#00BF63", "#0B3B36"],
-                width = 100)
-            fig_pe.update_layout(showlegend=False, title_x=0.5)
+                width = 400
+                )
+            fig_pe.update_layout(
+                showlegend=False, 
+                title_x=0.25)
 
             st.plotly_chart(fig_pe)
 
@@ -165,22 +187,58 @@ def expert_mode():
 
             df_comp = dataframe_electricity_mix(countries_to_compare)
 
+
+            impact_metrices = [
+                "Abiotic Depletion Potential for Elements (Kilograms of antimony equivalent)",
+                "Primary energy demand (Megajoules)",
+                "Global Warming Potential (Kilograms of CO2 equivalent)",
+                "Water Withdrawal Factor (Liters/Kilowatt-hour)",
+                "Water Consumption Factor (Liters/Kilowatt-hour)"
+            ]
+
+            impact_labels = {
+                impact_metrices[0] : "adpe (kg eq. Sb)",
+                impact_metrices[1]  : "pe (MJ)",
+                impact_metrices[2]  : "gwp (kg eq. CO2)",
+                impact_metrices[3] :  "water_wwf (L/kWh)",
+                impact_metrices[4] : "water_wcf (L/kWh)" 
+            }
+
             impact_type = st.selectbox(
                 label='Select an impact type to compare',
-                options=[x for x in df_comp.columns if x!='country'],
-                index=1)
+                options=[x for x in impact_labels],  # les noms affichés à l'utilisateur
+                index=1
+            )
 
-            df_comp.sort_values(by = impact_type, inplace = True)
+            impact_type_used = impact_labels[impact_type]
+
+            df_comp.sort_values(by = impact_type_used, inplace = True)
             
             fig_2 = px.bar(
                 df_comp,
                 x = df_comp.index,
-                y = impact_type,
-                text = impact_type,
-                color = impact_type
+                y = impact_type_used,
+                text = impact_type_used,
+                color = impact_type_used
             )
             
             st.plotly_chart(fig_2)
+
+            impact_explanations = {
+                impact_metrices[0]:
+                    "Measures the depletion of non-renewable resources (metals, minerals), expressed in kg of antimony equivalent (Sb). \
+                    The enviornmental impact equates to that amount of antimony being extracted.",
+                impact_metrices[1]:
+                    "Total amount of primary energy used (both renewable and non-renewable), expressed in megajoules (MJ).",
+                impact_metrices[2]:
+                    "Potential contribution to climate change over a 100-year time horizon, expressed in kilograms of CO₂ equivalent.",
+                impact_metrices[3]:
+                    "Total volume of water withdrawn throughout the process, expressed in liters (L).",
+                impact_metrices[4]:
+                    "Volume of water actually consumed (not returned to the source), expressed in liters (L)."
+            }
+
+            st.info(impact_explanations[impact_type])
 
         except:
 

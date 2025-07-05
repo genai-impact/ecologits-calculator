@@ -27,6 +27,9 @@ u.define('km = kilometer')
 u.define('s = second')
 u.define('min = minute')
 u.define('h = hour')
+# u.define('L = liters')
+# u.define('mL = milliliters')
+# u.define('bottled waters')
 q = u.Quantity
 
 @dataclass
@@ -35,6 +38,7 @@ class QImpacts:
     gwp: Quantity
     adpe: Quantity
     pe: Quantity
+#    water: Quantity
 
 
 class PhysicalActivity(str, Enum):
@@ -69,6 +73,8 @@ EV_ENERGY_EQ = q("0.17 kWh / km")
 # From https://impactco2.fr/outils/comparateur?value=1&comparisons=streamingvideo
 STREAMING_GWP_EQ = q("15.6 h / kgCO2eq")
 
+BOTTLED_WATERS_EQ = 0.75
+
 # From https://ourworldindata.org/population-growth
 ONE_PERCENT_WORLD_POPULATION = 80_000_000
 
@@ -89,6 +95,57 @@ IRELAND_POPULATION_MILLION = 5
 
 # From https://impactco2.fr/outils/comparateur?value=1&comparisons=&equivalent=avion-pny
 AIRPLANE_PARIS_NYC_GWP_EQ = q("177000 kgCO2eq")
+
+# From https://www.patagoniaalliance.org/wp-content/uploads/2014/08/How-much-water-does-an-Olympic-sized-swimming-pool-hold.pdf
+OLYMPIC_SWIMMING_POOL = 2500000 #2.5 million 
+
+# From https://docs.google.com/spreadsheets/d/1uj8yA601uBtJ7GSf7k96Lv1NoQBfsCnVmTCII2HgZvo/edit?gid=0#gid=0
+# Google : https://www.gstatic.com/gumdrop/sustainability/google-2025-environmental-report.pdf
+# Meta: https://sustainability.atmeta.com/wp-content/uploads/2024/08/Meta-2024-Sustainability-Report.pdf
+# Microsoft: https://azure.microsoft.com/en-us/blog/how-microsoft-measures-datacenter-water-and-energy-use-to-improve-azure-cloud-sustainability/
+# OVHCloud: https://corporate.ovhcloud.com/en/sustainability/environment/
+# Scaleway: https://www-uploads.scaleway.com/Impact_Report2024_A4_EN_e63efcae20.pdf
+# AWS: https://sustainability.aboutamazon.com/2023-report
+# Equinix: https://www.equinix.com/resources/infopapers/2023-corporate-sustainability-report
+PROVIDER_WUE_ONSITE = { #Water use efficiency on-site, as opposed to off-site generated energy 
+    "Google" : 0.916,
+    "Meta": 0.18,    # L/kWh, 2023
+    "Microsoft": 0.49, #2022
+    "OVHCloud": 0.37, #2024
+    "Scaleway": 0.216, #2023
+    "AWS" : 0.18, #2023
+    "Equinix" : 1.07 #2023
+}
+
+
+# Google https://www.gstatic.com/gumdrop/sustainability/google-2025-environmental-report.pdf
+# Meta https://sustainability.atmeta.com/data-centers/#:~:text=Meta's%20operational%20data%20centers%2C%20on,Effectiveness%20(WUE)%20of%200.20.
+# Microsoft https://azure.microsoft.com/en-us/blog/how-microsoft-measures-datacenter-water-and-energy-use-to-improve-azure-cloud-sustainability/
+# OVHCloud https://corporate.ovhcloud.com/en/sustainability/environment/
+# Scaleway https://www-uploads.scaleway.com/Impact_Report2024_A4_EN_e63efcae20.pdf
+# AWS https://sustainability.aboutamazon.com/products-services/aws-cloud
+# Equinix https://www.equinix.com/content/dam/eqxcorp/en_us/documents/resources/infopapers/ip_2023_sustainability_en.pdf
+PROVIDER_PUE = { #Power use efficiency 
+    "Google" : 1.09,
+    "Meta" : 1.09,	
+    "Microsoft" : 1.18,	
+    "OVHCloud" : 1.26,	
+    "Scaleway" : 1.37,	
+    "AWS" : 1.15,	
+    "Equinix" : 1.42	
+}
+
+AI_COMPANY_TO_DATA_CENTER_PROVIDER = { #A list that draws the connection between AI companies and their data center providers 
+    "anthropic"	: "Google",
+    "mistralai"	: "OVHCloud",
+    "cohere"	: "AWS", 
+    "databricks" : "Microsoft", 
+    "meta"	: "Meta",
+    "google"	: "Google",
+    "microsoft"	: "Microsoft", 
+    "openai" : "Microsoft"
+} 
+
 
 #####################################################################################
 ### IMPACTS FORMATING
@@ -115,6 +172,10 @@ def format_pe(pe: PE) -> Quantity:
         val = val.to("kJ")
     return val
 
+# def format_water(water: PE) -> Quantity:
+#     val = q(water.value, water.unit)
+#     return val
+
 def format_impacts(impacts: Impacts) -> QImpacts:
 
     try:
@@ -126,7 +187,7 @@ def format_impacts(impacts: Impacts) -> QImpacts:
             energy=format_energy(impacts.energy),
             gwp=format_gwp(impacts.gwp),
             adpe=format_adpe(impacts.adpe),
-            pe=format_pe(impacts.pe)
+            pe=format_pe(impacts.pe),
         ), impacts.usage, impacts.embodied
     except: #when no range
         return QImpacts(
@@ -199,6 +260,11 @@ def format_gwp_eq_streaming(gwp: Quantity) -> Quantity:
         streaming_eq = streaming_eq.to("s")
     return streaming_eq
 
+def format_water_eq_bottled_waters(water):
+    #water = water.to("bottled waters")
+    bottled_water_eq = water / BOTTLED_WATERS_EQ
+    return bottled_water_eq
+
 def format_energy_eq_electricity_production(energy: Quantity) -> tuple[EnergyProduction, Quantity]:
     electricity_eq = energy * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
     electricity_eq = electricity_eq.to("TWh")
@@ -216,4 +282,10 @@ def format_energy_eq_electricity_consumption_ireland(energy: Quantity) -> Quanti
 def format_gwp_eq_airplane_paris_nyc(gwp: Quantity) -> Quantity:
     gwp_eq = gwp * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
     gwp_eq = gwp_eq.to("kgCO2eq")
-    return gwp_eq / AIRPLANE_PARIS_NYC_GWP_EQ####################################################################################### MODELS PARAMETER####################################################################################
+    return gwp_eq / AIRPLANE_PARIS_NYC_GWP_EQ
+
+def format_water_eq_olympic_sized_swimming_pool(water):
+    water_eq = water * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
+    return water_eq / OLYMPIC_SWIMMING_POOL
+
+####################################################################################### MODELS PARAMETER####################################################################################

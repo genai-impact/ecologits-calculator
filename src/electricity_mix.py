@@ -2,6 +2,8 @@ from csv import DictReader
 import pandas as pd
 
 PATH = "src/data/electricity_mix.csv"
+#ATTENTION ! Il a deux fichiers avec le même nom, un dans data/electricity_mix.csv et l'autre dans src/data/electricity_mix.csv
+#vérifie que je modifie le bon fichier
 
 COUNTRY_CODES = [
     ("🌎 World", "WOR"),
@@ -145,7 +147,8 @@ COUNTRY_CODES = [
     ("🇦🇪 United Arab Emirates", "ARE")
 ]
 
-
+#faut que j'acquris plus de données sur ça. on manque des données sur beacoup de pays 
+#pour les pays qui manquent des centres de données, comme beaucoup en Afrique, qui mène leurs requêts ? 
 def find_electricity_mix(code: str):
     # TODO: Maybe more optimal to construct database at the beginning of the app
     #       in the same fashion as find_model
@@ -153,7 +156,7 @@ def find_electricity_mix(code: str):
     with open(PATH) as fd:
         csv = DictReader(fd)
         for row in csv:
-            res += [float(row[code])]
+            res += [row[code]]
     return res
 
 def dataframe_electricity_mix(countries: list):
@@ -173,3 +176,4 @@ def dataframe_electricity_mix(countries: list):
                         values='value')
 
     return df
+

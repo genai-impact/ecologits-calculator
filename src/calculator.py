@@ -21,7 +21,7 @@ def calculator_mode():
                 label = 'Provider',
                 options = [x for x in df['provider_clean'].unique()],
                 index = 7
-            )
+            ) #une liste de proviseurs à selectioner
 
         with col2:
             model = st.selectbox(
@@ -60,13 +60,13 @@ def calculator_mode():
 
             st.markdown('<h3 align = "center">Environmental impacts</h3>', unsafe_allow_html=True)
             st.markdown('<p align = "center">To understand how the environmental impacts are computed go to the 📖 Methodology tab.</p>', unsafe_allow_html=True)
-            display_impacts(impacts)
+            display_impacts(impacts, provider, location="🌎 World")
         
         with st.container(border=True):
             
             st.markdown('<h3 align = "center">That\'s equivalent to ...</h3>', unsafe_allow_html=True)
             st.markdown('<p align = "center">Making this request to the LLM is equivalent to the following actions :</p>', unsafe_allow_html=True)
-            display_equivalent(impacts)
+            display_equivalent(impacts, provider, location="🌎 World")
             
     except Exception as e:
         st.error('Could not find the model in the repository. Please try another model.')
