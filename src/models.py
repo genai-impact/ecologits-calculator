@@ -15,8 +15,12 @@ def clean_models_data(df, with_filter = True):
         'cohere': 'Cohere',
         'microsoft': 'Microsoft',
         'mistral-community': 'Mistral Community',
-        'databricks': 'Databricks'
+        'databricks': 'Databricks',
+        "azureopenai" : "Microsoft", #présent dans ecologits mais pas ici. traité comme Openai
+        "huggingfacehub" : "AWS" #présent dans ecologits mais pas ici. traité comme Openai
     }
+
+
 
     models_to_keep = MAIN_MODELS
     

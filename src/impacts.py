@@ -34,58 +34,72 @@ def display_impacts(impacts, provider, location):
     col_energy, col_ghg, col_adpe, col_pe, col_water = st.columns(5)
 
     with col_energy:
-        st.markdown('<h4 align="center">⚡️ Energy</h4>', unsafe_allow_html = True)
+        st.markdown("""
+        <div style="text-align: center;">
+        <div style="font-size: 30px;">⚡️</div>
+        <div style="font-size: 25px;">Energy</div>
+        </div>
+        """, unsafe_allow_html = True)
         st.latex(f'\Large {impacts.energy.magnitude:.3g} \ \large {impacts.energy.units}')
-        st.markdown(f'<p align="center"><i>Evaluates the electricity consumption<i></p>', unsafe_allow_html = True)
+        st.markdown("""
+        <div style="height: 10px;"></div>            
+        <div style="text-align: center;"><i>Evaluates the electricity consumption<i>
+        </div>
+        """, unsafe_allow_html = True)
 
     with col_ghg:
-        st.markdown('<h4 align="center">🌍️ GHG Emissions</h4>', unsafe_allow_html = True)
+        st.markdown("""
+        <div style="text-align: center;">
+        <div style="font-size: 30px;">🌍️</div>
+        <div style="font-size: 18px;">GHG Emissions</div>
+        </div>
+        """, unsafe_allow_html = True)
         st.latex(f'\Large {impacts.gwp.magnitude:.3g} \ \large {impacts.gwp.units}')
-        st.markdown(f'<p align="center"><i>Evaluates the effect on global warming<i></p>', unsafe_allow_html = True)
+        st.markdown("""
+        <div style="text-align: center;"><i>Evaluates the effect on climate change<i>
+        </div>
+        """, unsafe_allow_html = True)
 
     with col_adpe:
-        st.markdown('<h4 align="center">🪨 Abiotic Resources</h4>', unsafe_allow_html = True)
+        st.markdown("""
+        <div style="text-align: center;">
+        <div style="font-size: 30px;">🪨</div>
+        <div style="font-size: 16px;">Abiotic Resources</div>
+        </div>
+        """, unsafe_allow_html = True)
         st.latex(f'\Large {impacts.adpe.magnitude:.3g} \ \large {impacts.adpe.units}')
-        st.markdown(f'<p align="center"><i>Evaluates the use of metals and minerals<i></p>', unsafe_allow_html = True)
+        st.markdown("""
+        <div style="text-align: center;"><i>Evaluates the use of metals and minerals<i>
+        </div>
+        """, unsafe_allow_html = True)
 
     with col_pe:
-        st.markdown('<h4 align="center">⛽️ Primary Energy</h4>', unsafe_allow_html = True)
+        st.markdown("""
+        <div style="text-align: center;">
+        <div style="font-size: 30px;">⛽️</div>
+        <div style="font-size: 18px;">Primary Energy</div>
+        </div>
+        """, unsafe_allow_html = True)
         st.latex(f'\Large {impacts.pe.magnitude:.3g} \ \large {impacts.pe.units}')
-        st.markdown(f'<p align="center"><i>Evaluates the use of energy resources<i></p>', unsafe_allow_html = True)
+        st.markdown("""
+        <div style="height: 10px;"></div>
+        <div style="text-align: center;"><i>Evaluates the use of energy resources<i>
+        </div>
+        """, unsafe_allow_html = True)
 
+    with col_water: 
+        st.markdown("""
+        <div style="text-align: center;">
+        <div style="font-size: 30px;">🚰</div>
+        <div style="font-size: 25px;">Water</div>
+        </div>
+        """, unsafe_allow_html = True)
+        st.latex(f'\Large {impacts.water.magnitude:.3g} \ \large {impacts.water.units}')
+        st.markdown("""
+        <div style="text-align: center;"><i>Evaluates the use of water<i>
+        </div>
+        """, unsafe_allow_html = True)
 
-    with col_water: #je sais pas où se trouve magnitude ou impact, donc j'ai commencé par une approche locale
-        st.markdown('<h4 align="center">🚰 Water</h4>', unsafe_allow_html = True)
-        water = water_impact(impacts, provider, location)
-        if water >= 1 : 
-            st.latex(f'\Large {water:.3g} \ \large {"Liters"}')
-        else :
-            st.latex(f'\Large {water * 1000 :.3g} \ \large {"mLiters"}')
-        st.markdown(f'<p align="center"><i>Evaluates the use of water<i></p>', unsafe_allow_html = True)
-
-
-# WCF = E_server * [WUE_on-site + PUE * WUE_off-site] + embodied (embodied not yet implemented, embodied = T * WCF_embodied / lifetime)
-# WCF : Water Consumption Footprint for the request
-# E_server : energy cost at the server for the request 
-# WUE_on-site : Water usage efficiency at the data center 
-# PUE: Power usage efficiency at the data center 
-# WUE_off-site: Water usage efficiency of the local electricity mix 
-def water_impact(impacts, provider, location):
-    energy = impacts.energy.magnitude 
-    PUE = PROVIDER_PUE[AI_COMPANY_TO_DATA_CENTER_PROVIDER[provider.lower()]]
-    WUE_onsite = PROVIDER_WUE_ONSITE[AI_COMPANY_TO_DATA_CENTER_PROVIDER[provider.lower()]]
-    #WUE_on-site = 
-    #pas de variation régionale pour le simulateur simple mais oui pour le simulateur expert mode
-    try:
-        WUE_offsite = float(find_electricity_mix([x[1] for x in COUNTRY_CODES if x[0] ==location][0])[4])
-    except :    
-        WUE_offsite = float(find_electricity_mix(["WOR"][0])[4])
-        st.warning(f"Lacking data on {location}, showing global average data.")
-
-    water_consumption = energy * (WUE_onsite + PUE * WUE_offsite) /1000 #5.04 est la valeur WUF moyenne du globe
-
-    #/1000 parce que les WUE et PUE sont en kWh
-    return water_consumption
 
 ############################################################################################################
 
@@ -102,31 +116,53 @@ def display_equivalent(impacts, provider, location):
     with col1:
         physical_activity, distance = format_energy_eq_physical_activity(impacts.energy)
         if physical_activity == PhysicalActivity.WALKING:
-            physical_activity = "🚶 " + physical_activity.capitalize()
+            physical_activity_emoji = "🚶 " 
+            physical_activity = physical_activity.capitalize()
         if physical_activity == PhysicalActivity.RUNNING:
-            physical_activity = "🏃 " + physical_activity.capitalize()
+            physical_activity_emoji = "🏃 " 
+            physical_activity = physical_activity.capitalize()
 
-        st.markdown(f'<h4 align="center">{physical_activity}</h4>', unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 30px;">{physical_activity_emoji}</div>
+        <div style="font-size: 25px;">{physical_activity}</div>
+        </div>
+        """, unsafe_allow_html = True)
         st.latex(f'\Large {distance.magnitude:.3g} \ \large {distance.units}')
         st.markdown(f'<p align="center"><i>Based on energy consumption<i></p>', unsafe_allow_html = True)
 
     with col2:
         ev_eq = format_energy_eq_electric_vehicle(impacts.energy)
-        st.markdown(f'<h4 align="center">🔋 Electric Vehicle</h4>', unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 30px;">🔋</div>
+        <div style="font-size: 22px;">Electric Vehicle</div>
+        </div>
+        """, unsafe_allow_html = True)
         st.latex(f'\Large {ev_eq.magnitude:.3g} \ \large {ev_eq.units}')
         st.markdown(f'<p align="center"><i>Based on energy consumption<i></p>', unsafe_allow_html = True)
 
     with col3:
         streaming_eq = format_gwp_eq_streaming(impacts.gwp)
-        st.markdown(f'<h4 align="center">⏯️ Streaming</h4>', unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 30px;">⏯️</div>
+        <div style="font-size: 25px;">Streaming</div>
+        </div>
+        """, unsafe_allow_html = True)
         st.latex(f'\Large {streaming_eq.magnitude:.3g} \ \large {streaming_eq.units}')
         st.markdown(f'<p align="center"><i>Based on GHG emissions<i></p>', unsafe_allow_html = True)
     
     with col4:
-        water = water_impact(impacts, provider, location)
-        water_eq = format_water_eq_bottled_waters(water)
-        st.markdown(f'<h4 align="center">🚰 Bottled waters</h4>', unsafe_allow_html = True)
-        st.latex(f'\Large {water_eq:.3g} \ \large {"bottles"}')
+        #water = water_impact(impacts, provider, location)
+        water_eq = format_water_eq_bottled_waters(impacts.water)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 30px;">🚰</div>
+        <div style="font-size: 25px;">Bottled Waters</div>
+        </div>
+        """, unsafe_allow_html = True)
+        st.latex(f'\Large {water_eq.magnitude:.3g} \ \large {"bottles"}')
         st.markdown(f'<p align="center"><i>Based on water consumption, measured in 0.75 L bottles.<i></p>', unsafe_allow_html = True)
     
 
@@ -160,8 +196,7 @@ def display_equivalent(impacts, provider, location):
         st.markdown(f'<p align="center"><i>Based on GHG emissions<i></p>', unsafe_allow_html = True)
 
     with col8:
-        water = water_impact(impacts, provider, location)
-        water_eq = format_water_eq_olympic_sized_swimming_pool(water)
-        st.markdown(f'<h4 align="center">🏊🏼 {round(water_eq):,} Olympic-sized swimming pools</h4>', unsafe_allow_html = True)
+        olympic_swimming_pool = format_water_eq_olympic_sized_swimming_pool(impacts.water)
+        st.markdown(f'<div style="text-align: center; font-size: 20px; font-weight: bold;">🏊🏼 {round(olympic_swimming_pool.magnitude):,} Olympic-sized swimming pools</h4>', unsafe_allow_html = True)
         st.markdown(f'<p align="center"><i>Based on water consumption<i></p>', unsafe_allow_html = True)
 

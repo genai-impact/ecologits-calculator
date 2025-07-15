@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from ecologits.model_repository import models
-from ecologits.impacts.modeling import Impacts, Energy, GWP, ADPe, PE
+from ecologits.impacts.modeling import Impacts, Energy, GWP, ADPe, PE, Water
 #from ecologits.tracers.utils import llm_impacts
 from pint import UnitRegistry, Quantity
 
@@ -27,9 +27,9 @@ u.define('km = kilometer')
 u.define('s = second')
 u.define('min = minute')
 u.define('h = hour')
-# u.define('L = liters')
-# u.define('mL = milliliters')
-# u.define('bottled waters')
+u.define('L = liter')
+u.define('mL = milliliter')
+#u.define('bottled waters = bottled waters')
 q = u.Quantity
 
 @dataclass
@@ -38,7 +38,7 @@ class QImpacts:
     gwp: Quantity
     adpe: Quantity
     pe: Quantity
-#    water: Quantity
+    water: Quantity
 
 
 class PhysicalActivity(str, Enum):
@@ -73,7 +73,7 @@ EV_ENERGY_EQ = q("0.17 kWh / km")
 # From https://impactco2.fr/outils/comparateur?value=1&comparisons=streamingvideo
 STREAMING_GWP_EQ = q("15.6 h / kgCO2eq")
 
-BOTTLED_WATERS_EQ = 0.75
+BOTTLED_WATERS_EQ = q("0.75 L")
 
 # From https://ourworldindata.org/population-growth
 ONE_PERCENT_WORLD_POPULATION = 80_000_000
@@ -97,7 +97,7 @@ IRELAND_POPULATION_MILLION = 5
 AIRPLANE_PARIS_NYC_GWP_EQ = q("177000 kgCO2eq")
 
 # From https://www.patagoniaalliance.org/wp-content/uploads/2014/08/How-much-water-does-an-Olympic-sized-swimming-pool-hold.pdf
-OLYMPIC_SWIMMING_POOL = 2500000 #2.5 million 
+OLYMPIC_SWIMMING_POOL = q("2500000 L") #2.5 million 
 
 # From https://docs.google.com/spreadsheets/d/1uj8yA601uBtJ7GSf7k96Lv1NoQBfsCnVmTCII2HgZvo/edit?gid=0#gid=0
 # Google : https://www.gstatic.com/gumdrop/sustainability/google-2025-environmental-report.pdf
@@ -172,9 +172,11 @@ def format_pe(pe: PE) -> Quantity:
         val = val.to("kJ")
     return val
 
-# def format_water(water: PE) -> Quantity:
-#     val = q(water.value, water.unit)
-#     return val
+def format_water(water: Water) -> Quantity:
+    val = q(water.value, water.unit)
+    if val < q("1 L"):
+        val = val.to("mL")
+    return val
 
 def format_impacts(impacts: Impacts) -> QImpacts:
 
@@ -183,18 +185,21 @@ def format_impacts(impacts: Impacts) -> QImpacts:
         impacts.gwp.value = (impacts.gwp.value.max + impacts.gwp.value.min)/2
         impacts.adpe.value = (impacts.adpe.value.max + impacts.adpe.value.min)/2
         impacts.pe.value = (impacts.pe.value.max + impacts.pe.value.min)/2
+        impacts.water.value = (impacts.water.value.max + impacts.water.value.min)/2
         return QImpacts(
             energy=format_energy(impacts.energy),
             gwp=format_gwp(impacts.gwp),
             adpe=format_adpe(impacts.adpe),
             pe=format_pe(impacts.pe),
+            water=format_water(impacts.water)
         ), impacts.usage, impacts.embodied
     except: #when no range
         return QImpacts(
             energy=format_energy(impacts.energy),
             gwp=format_gwp(impacts.gwp),
             adpe=format_adpe(impacts.adpe),
-            pe=format_pe(impacts.pe)
+            pe=format_pe(impacts.pe),
+            water=format_water(impacts.water)
         ), impacts.usage, impacts.embodied
 
 def split_impacts_u_e(impacts: Impacts) -> QImpacts:
@@ -214,7 +219,8 @@ def format_impacts_expert(impacts: Impacts, display_range: bool) -> QImpacts:
             energy=format_energy(impacts.energy),
             gwp=format_gwp(impacts.gwp),
             adpe=format_adpe(impacts.adpe),
-            pe=format_pe(impacts.pe)
+            pe=format_pe(impacts.pe),
+            water=format_water(impacts.water)
         ), impacts.usage, impacts.embodied
     
     else:
@@ -226,7 +232,8 @@ def format_impacts_expert(impacts: Impacts, display_range: bool) -> QImpacts:
             energy=format_energy(energy),
             gwp=format_gwp(gwp),
             adpe=format_adpe(adpe),
-            pe=format_pe(pe)
+            pe=format_pe(pe),
+            water=format_water(impacts.water)
         ), impacts.usage, impacts.embodied
 
 #####################################################################################
@@ -260,8 +267,8 @@ def format_gwp_eq_streaming(gwp: Quantity) -> Quantity:
         streaming_eq = streaming_eq.to("s")
     return streaming_eq
 
-def format_water_eq_bottled_waters(water):
-    #water = water.to("bottled waters")
+def format_water_eq_bottled_waters(water: Quantity) -> Quantity:
+    water = water.to("L")
     bottled_water_eq = water / BOTTLED_WATERS_EQ
     return bottled_water_eq
 
@@ -284,8 +291,13 @@ def format_gwp_eq_airplane_paris_nyc(gwp: Quantity) -> Quantity:
     gwp_eq = gwp_eq.to("kgCO2eq")
     return gwp_eq / AIRPLANE_PARIS_NYC_GWP_EQ
 
-def format_water_eq_olympic_sized_swimming_pool(water):
+def format_water_eq_olympic_sized_swimming_pool(water: Quantity) -> Quantity:
     water_eq = water * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
+    water_eq = water_eq.to("L")
     return water_eq / OLYMPIC_SWIMMING_POOL
+
+# def format_water_eq_olympic_sized_swimming_pool(water):
+#     water_eq = water * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
+#     return water_eq / OLYMPIC_SWIMMING_POOL
 
 ####################################################################################### MODELS PARAMETER####################################################################################

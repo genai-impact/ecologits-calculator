@@ -32,6 +32,8 @@ def expert_mode():
                 key = 1
             )
 
+        provider_selected = st.session_state[1].lower()
+
         with col2:
             model_exp = st.selectbox(
                 label = 'Model',
@@ -79,7 +81,7 @@ def expert_mode():
 
         location = st.selectbox('Location', [x[0] for x in COUNTRY_CODES])
 
-        col4, col5, col6 = st.columns(3)
+        col4, col5 = st.columns(2)
 
         with col4:
             try:
@@ -97,11 +99,20 @@ def expert_mode():
                 mix_adpe = st.number_input('Electricity mix - Abiotic resources [kgSbeq / kWh]', float(find_electricity_mix(["WOR"][0])[0]), format="%0.13f")
                 st.warning(f"Lacking data on {location}, showing global average data.")
 
+        col6, col7 = st.columns(2)
+
         with col6:
             try: 
                 mix_pe = st.number_input('Electricity mix - Primary energy [MJ / kWh]', float(find_electricity_mix([x[1] for x in COUNTRY_CODES if x[0] ==location][0])[1]), format="%0.3f")
             except: 
                 mix_pe = st.number_input('Electricity mix - Primary energy [MJ / kWh]', float(find_electricity_mix(["WOR"][0])[1]), format="%0.3f")
+                st.warning(f"Lacking data on {location}, showing global average data.")
+
+        with col7:
+            try: 
+                mix_water = st.number_input('Electricity mix - Water consumption factor [L / kWh]', float(find_electricity_mix([x[1] for x in COUNTRY_CODES if x[0] ==location][0])[4]), format="%0.3f")
+            except: 
+                mix_water = st.number_input('Electricity mix - Water consumption factor [L / kWh]', float(find_electricity_mix(["WOR"][0])[4]), format="%0.3f")
                 st.warning(f"Lacking data on {location}, showing global average data.")
 
 
@@ -111,7 +122,9 @@ def expert_mode():
                 request_latency=100000,
                 if_electricity_mix_gwp=mix_gwp,
                 if_electricity_mix_adpe=mix_adpe,
-                if_electricity_mix_pe=mix_pe
+                if_electricity_mix_pe=mix_pe,
+                if_electricity_mix_wcf=mix_water,
+                provider = provider_selected
             )
     
     impacts, usage, embodied = format_impacts(impacts)

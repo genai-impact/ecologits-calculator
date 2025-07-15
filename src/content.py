@@ -171,27 +171,15 @@ Where
 
 Additionally, the environmental impacts are expressed in **four dimensions 
 (multi-criteria impacts)**:
-* 🌍 **Global Warming Potential** (GWP): Potential impact on global warming in kilograms of CO2 equivalent, 
+* 🌍 **Global Warming Potential** (GWP): Potential impact on Climate Change in kilograms of CO2 equivalent, 
 or kgCO2eq, also commonly known as green house gases (GHG) or carbon emissions.
 * 🪨 **Abiotic Depletion Potential for Elements** (ADPe): Mesures the impact on the depletion of non-organic resources such as 
 minerals or metals in kilograms of antimony equivalent. This is to say the impact equating to that amount of antimony extracted.
 * ⛽️ **Primary Energy** (PE): Total energy consumed from primary sources in megajoules.
-* 💧 **Water Use** : Water consumption from this request. The formula for quantifying this is:
-$$
-WCF_{request} = E_{\text{server}} \times \left( \text{WUE}_{\text{on-site}} + \text{PUE} \times \text{WUE}_{\text{off-site}} \right) + \color{orange}{\frac{\Delta T \times {WCF}_{embodied}}{\Delta L \times N_{requests}} }
-$$
-Where
-* $WCF_{request}$ : Water consumption footprint for the request
-* $E_{\text{server}}$ : Energy cost at the server for the request 
-* $WUE_{on-site}$ : Water usage efficiency at the data center 
-* $PUE$: Power usage efficiency at the data center 
-* $WUE_{off-site}$ : Water usage efficiency of the local electricity mix 
-* $\color{orange}{\Delta T}$ : Generation latency, or the time it takes for the server to process the request, in seconds
-* $\color{orange}{\Delta L}$ : Server lifespan in seconds
-* $\color{orange}{N_{requests}}$ : Number of simultanous reqeusts handled by the server
-* $\color{orange}{WCF_{embodied}}$ : Embodied water consumption footprint for manufacturing the server
+* 💧 **Water Use** : Water consumption from this request. 
 
-The variables in $\color{orange}{orange}$ represent the embodied water consumption and are not presently integrated into the calculations due to the lack of data. According to many sources, once integrated, they could double or more our water consumption estimation.
+Again, if you are interested in seeing the detailed calculations we employ, please consider checking out the methodology page on our website for [ecologits]https://ecologits.ai/latest/methodology/llm_inference/)!
+
 ### Principles, Data and Hypotheses
 We use a **bottom-up methodology** to model impacts, meaning that we estimate the impacts of low-level physical 
 components to then estimate the impacts at software level (in our case an LLM inference). We also rely on **Life 
@@ -277,7 +265,7 @@ CITATION_TEXT = r"""@misc{ecologits-calculator,
   howpublished= {\url{https://huggingface.co/spaces/genai-impact/ecologits-calculator}},
 }
 @software{ecologits,
-  author = {Samuel Rincé, Adrien Banse, Vinh Nguyen and Luc Berton},
+  author = {Samuel Rincé, Adrien Banse, Vinh Nguyen, Luc Berton, and Chieh Hsu},
   publisher = {GenAI Impact},
   title = {EcoLogits: track the energy consumption and environmental footprint of using generative AI models through APIs.},
 }"""
