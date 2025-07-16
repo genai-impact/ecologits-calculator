@@ -4,7 +4,8 @@ from src.content import (
     HERO_TEXT,
     ABOUT_TEXT,
     CITATION_LABEL,
-    CITATION_TEXT,
+    CITATION_TEXT_CALCULATOR,
+    CITATION_TEXT_SOFTWARE,
     LICENCE_TEXT,
     INTRO_TEXT,
     METHODOLOGY_TEXT
@@ -13,6 +14,7 @@ from src.content import (
 from src.expert import expert_mode
 from src.calculator import calculator_mode
 from src.token_estimator import token_estimator
+from src.company import company_mode
 
 st.set_page_config(
     layout="wide",
@@ -27,9 +29,10 @@ st.html(HERO_TEXT)
 
 st.markdown(INTRO_TEXT)
 
-tab_calculator, tab_expert, tab_token, tab_method, tab_about = st.tabs(
+tab_calculator, tab_company, tab_expert, tab_token, tab_method, tab_about = st.tabs(
     [
         '🧮 Calculator',
+        '👩🏻‍💻 Companies',
         '🤓 Expert Mode',
         '🪙 Tokens estimator',
         '📖 Methodology',
@@ -40,6 +43,10 @@ tab_calculator, tab_expert, tab_token, tab_method, tab_about = st.tabs(
 with tab_calculator:
 
     calculator_mode()
+
+with tab_company:
+
+    company_mode()
 
 with tab_expert:
 
@@ -59,6 +66,7 @@ with tab_about:
 
 with st.expander('📚 Citation'):
     st.html(CITATION_LABEL)
-    st.html(CITATION_TEXT)
+    st.html(CITATION_TEXT_CALCULATOR)
+    st.html(CITATION_TEXT_SOFTWARE)
 
 st.html(LICENCE_TEXT)

@@ -45,28 +45,28 @@ def calculator_mode():
         if df_filtered['warning_arch'].values[0] and df_filtered['warning_multi_modal'].values[0]:
             st.warning(WARNING_BOTH)
             
-    #try:
+    try:
 
-    impacts = llm_impacts(
-                    provider=provider_raw,
-                    model_name=model_raw,
-                    output_token_count=[x[1] for x in PROMPTS if x[0] == output_tokens][0],
-                    request_latency=100000
-                )
+        impacts = llm_impacts(
+                        provider=provider_raw,
+                        model_name=model_raw,
+                        output_token_count=[x[1] for x in PROMPTS if x[0] == output_tokens][0],
+                        request_latency=100000
+                    )
 
-    impacts, _, _ = format_impacts(impacts)
-    
-    with st.container(border=True):
-
-        st.markdown('<h3 align = "center">Environmental impacts</h3>', unsafe_allow_html=True)
-        st.markdown('<p align = "center">To understand how the environmental impacts are computed go to the 📖 Methodology tab.</p>', unsafe_allow_html=True)
-        display_impacts(impacts, provider, location="🌎 World")
-    
-    with st.container(border=True):
+        impacts, _, _ = format_impacts(impacts)
         
-        st.markdown('<h3 align = "center">That\'s equivalent to ...</h3>', unsafe_allow_html=True)
-        st.markdown('<p align = "center">Making this request to the LLM is equivalent to the following actions :</p>', unsafe_allow_html=True)
-        display_equivalent(impacts, provider, location="🌎 World")
+        with st.container(border=True):
+
+            st.markdown('<h3 align = "center">Environmental impacts</h3>', unsafe_allow_html=True)
+            st.markdown('<p align = "center">To understand how the environmental impacts are computed go to the 📖 Methodology tab.</p>', unsafe_allow_html=True)
+            display_impacts(impacts, provider, location="🌎 World")
+        
+        with st.container(border=True):
             
-    # except Exception as e:
-    #     st.error('Could not find the model in the repository. Please try another model.')
+            st.markdown('<h3 align = "center">That\'s equivalent to ...</h3>', unsafe_allow_html=True)
+            st.markdown('<p align = "center">Making this request to the LLM is equivalent to the following actions :</p>', unsafe_allow_html=True)
+            display_equivalent(impacts, provider, location="🌎 World")
+                
+    except Exception as e:
+        st.error('Could not find the model in the repository. Please try another model.')

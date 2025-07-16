@@ -78,7 +78,9 @@ BOTTLED_WATERS_EQ = q("0.75 L")
 # From https://ourworldindata.org/population-growth
 ONE_PERCENT_WORLD_POPULATION = 80_000_000
 
-DAYS_IN_YEAR = 365
+DAYS_IN_YEAR = 365.15
+
+WORKDAYS_IN_YEAR_FRANCE = 251
 
 # For a 900 MW nuclear plant -> 500 000 MWh / month
 # From https://www.edf.fr/groupe-edf/espaces-dedies/jeunes-enseignants/pour-les-jeunes/lenergie-de-a-a-z/produire-de-lelectricite/le-nucleaire-en-chiffres
@@ -235,6 +237,10 @@ def format_impacts_expert(impacts: Impacts, display_range: bool) -> QImpacts:
             pe=format_pe(pe),
             water=format_water(impacts.water)
         ), impacts.usage, impacts.embodied
+    
+
+
+######################################################################3
 
 #####################################################################################
 ### EQUIVALENT FORMATING
@@ -286,6 +292,7 @@ def format_energy_eq_electricity_consumption_ireland(energy: Quantity) -> Quanti
     electricity_eq = electricity_eq.to("TWh")
     return electricity_eq / YEARLY_IRELAND_ELECTRICITY_CONSUMPTION
 
+
 def format_gwp_eq_airplane_paris_nyc(gwp: Quantity) -> Quantity:
     gwp_eq = gwp * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
     gwp_eq = gwp_eq.to("kgCO2eq")
@@ -296,8 +303,64 @@ def format_water_eq_olympic_sized_swimming_pool(water: Quantity) -> Quantity:
     water_eq = water_eq.to("L")
     return water_eq / OLYMPIC_SWIMMING_POOL
 
-# def format_water_eq_olympic_sized_swimming_pool(water):
-#     water_eq = water * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
-#     return water_eq / OLYMPIC_SWIMMING_POOL
+########################################################################
+
+def format_energy_eq_physical_activity_company(energy: Quantity, company_multiplier) -> tuple[PhysicalActivity, Quantity]:
+    energy = energy.to("kJ")
+    running_eq = energy / RUNNING_ENERGY_EQ * company_multiplier
+    if running_eq > q("1 km"):
+        return PhysicalActivity.RUNNING, running_eq
+
+    walking_eq = energy / WALKING_ENERGY_EQ
+    if walking_eq < q("1 km"):
+        walking_eq = walking_eq.to("meter")
+    return PhysicalActivity.WALKING, walking_eq
+
+def format_energy_eq_electric_vehicle_company(energy: Quantity, company_multiplier) -> Quantity:
+    energy = energy.to("kWh")
+    ev_eq = energy / EV_ENERGY_EQ * company_multiplier
+    if ev_eq < q("1 km"):
+        ev_eq = ev_eq.to("meter")
+    return ev_eq
+
+def format_gwp_eq_streaming_company(gwp: Quantity, company_multiplier) -> Quantity:
+    gwp = gwp.to("kgCO2eq")
+    streaming_eq = gwp * STREAMING_GWP_EQ * company_multiplier
+    if streaming_eq < q("1 h"):
+        streaming_eq = streaming_eq.to("min")
+    if streaming_eq < q("1 min"):
+        streaming_eq = streaming_eq.to("s")
+    return streaming_eq
+
+def format_water_eq_bottled_waters_company(water: Quantity, company_multiplier) -> Quantity:
+    water = water.to("L")
+    bottled_water_eq = water / BOTTLED_WATERS_EQ * company_multiplier
+    return bottled_water_eq
+
+def format_energy_eq_electricity_production_company(energy: Quantity, company_multiplier) -> tuple[EnergyProduction, Quantity]:
+    electricity_eq = energy * company_multiplier * WORKDAYS_IN_YEAR_FRANCE
+    electricity_eq = electricity_eq.to("TWh")
+    if electricity_eq > YEARLY_NUCLEAR_ENERGY_EQ:
+        return EnergyProduction.NUCLEAR, electricity_eq / YEARLY_NUCLEAR_ENERGY_EQ
+    electricity_eq = electricity_eq.to("GWh")
+    return EnergyProduction.WIND, electricity_eq / YEARLY_WIND_ENERGY_EQ
+
+
+def format_energy_eq_electricity_consumption_ireland_company(energy: Quantity, company_multiplier) -> Quantity:
+    electricity_eq = energy * company_multiplier * WORKDAYS_IN_YEAR_FRANCE
+    electricity_eq = electricity_eq.to("TWh")
+    return electricity_eq / YEARLY_IRELAND_ELECTRICITY_CONSUMPTION
+
+
+def format_gwp_eq_airplane_paris_nyc_company(gwp: Quantity, company_multiplier) -> Quantity:
+    gwp_eq = gwp * company_multiplier * WORKDAYS_IN_YEAR_FRANCE
+    gwp_eq = gwp_eq.to("kgCO2eq")
+    return gwp_eq / AIRPLANE_PARIS_NYC_GWP_EQ
+
+def format_water_eq_olympic_sized_swimming_pool_company(water: Quantity, company_multiplier) -> Quantity:
+    water_eq = water * company_multiplier * WORKDAYS_IN_YEAR_FRANCE
+    water_eq = water_eq.to("L")
+    return water_eq / OLYMPIC_SWIMMING_POOL
+
 
 ####################################################################################### MODELS PARAMETER####################################################################################

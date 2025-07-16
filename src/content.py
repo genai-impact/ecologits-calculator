@@ -258,17 +258,21 @@ an Olympic-sized swimming pool holds about 2.5 million liters of water.
 """
 
 CITATION_LABEL = "BibTeX citation for EcoLogits Calculator and the EcoLogits library:"
-CITATION_TEXT = r"""@misc{ecologits-calculator,
+CITATION_TEXT_CALCULATOR = r"""@misc{ecologits-calculator,
   author={Samuel Rincé, Adrien Banse, Valentin Defour, and Chieh Hsu},
   title={EcoLogits Calculator},
   year={2025},
   howpublished= {\url{https://huggingface.co/spaces/genai-impact/ecologits-calculator}},
 }
+"""
+
+CITATION_TEXT_SOFTWARE = r"""
 @software{ecologits,
   author = {Samuel Rincé, Adrien Banse, Vinh Nguyen, Luc Berton, and Chieh Hsu},
   publisher = {GenAI Impact},
   title = {EcoLogits: track the energy consumption and environmental footprint of using generative AI models through APIs.},
-}"""
+}
+"""
 
 LICENCE_TEXT = """<p xmlns:cc="http://creativecommons.org/ns#" >
   This work is licensed under 

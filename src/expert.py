@@ -141,20 +141,19 @@ def expert_mode():
 
         st.markdown('The usage impacts account for the electricity consumption of the model while the embodied impacts account for resource extraction (e.g., minerals and metals), manufacturing, and transportation of the hardware.')
         
-        col_ghg_comparison, col_adpe_comparison, col_pe_comparison = st.columns(3)
+        col_ghg_comparison, col_adpe_comparison, col_pe_comparison, col_water_comparison = st.columns(4)
         
         with col_ghg_comparison:
-
             fig_gwp = px.pie(
-            values = [average_range_impacts(usage.gwp.value), average_range_impacts(embodied.gwp.value)],
-            names = ['usage', 'embodied'],
-            title = 'GHG emissions',
-            color_discrete_sequence=["#00BF63", "#0B3B36"],
-            width = 400
+                values = [average_range_impacts(usage.gwp.value), average_range_impacts(embodied.gwp.value)],
+                names = ['usage', 'embodied'],
+                title = 'GHG emissions',
+                color_discrete_sequence=["#00BF63", "#0B3B36"],   
+                width = 300
             )
             fig_gwp.update_layout(
                 showlegend=False, 
-                title_x=0.25)
+                title_x=0.1)
 
             st.plotly_chart(fig_gwp)
 
@@ -163,13 +162,18 @@ def expert_mode():
                 values = [average_range_impacts(usage.adpe.value), average_range_impacts(embodied.adpe.value)],
                 names = ['usage', 'embodied'],
                 title = 'Abiotic depletion',
-                color_discrete_sequence=["#0B3B36","#00BF63"],
-                width = 400
-                )
+                color = ['usage', 'embodied'],  # Associe chaque valeur à un label pour la couleur
+                color_discrete_map={
+                    'usage': '#00BF63',
+                    'embodied': '#0B3B36'
+                },
+                width = 300
+            )
             fig_adpe.update_layout(
                 showlegend=False,
-                title_x=0.25)
-            
+                title_x=0.05
+            )
+
             st.plotly_chart(fig_adpe)
 
         with col_pe_comparison:
@@ -178,13 +182,27 @@ def expert_mode():
                 names = ['usage', 'embodied'],
                 title = 'Primary energy',
                 color_discrete_sequence=["#00BF63", "#0B3B36"],
-                width = 400
+                width = 300
                 )
             fig_pe.update_layout(
                 showlegend=False, 
-                title_x=0.25)
+                title_x=0.1)
 
             st.plotly_chart(fig_pe)
+
+        with col_water_comparison:
+            fig_water = px.pie(
+                values = [average_range_impacts(usage.water.value), average_range_impacts(embodied.water.value)],
+                names = ['usage', 'embodied'],
+                title = 'Water',
+                color_discrete_sequence=["#00BF63", "#0B3B36"],
+                width = 300
+                )
+            fig_water.update_layout(
+                showlegend=False, 
+                title_x=0.3)
+
+            st.plotly_chart(fig_water)
 
     with st.expander('🌍️ Location impact'):
 
