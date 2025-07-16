@@ -89,31 +89,30 @@ def company_mode():
 
     company_multiplier = company_size * use_percentage/100 * request_frequency
 
-    #try:
+    try:
 
-    impacts = llm_impacts(
-                    provider=provider_raw,
-                    model_name=model_raw,
-                    output_token_count=[x[1] for x in PROMPTS if x[0] == output_tokens][0],
-                    request_latency=100000
-                )
+        impacts = llm_impacts(
+                        provider=provider_raw,
+                        model_name=model_raw,
+                        output_token_count=[x[1] for x in PROMPTS if x[0] == output_tokens][0],
+                        request_latency=100000
+                    )
 
-    impacts, _, _ = format_impacts(impacts)
+        impacts, _, _ = format_impacts(impacts)
 
-    #down here
 
-    
-    with st.container(border=True):
+        
+        with st.container(border=True):
 
-        st.markdown('<h3 align = "center">Environmental impacts</h3>', unsafe_allow_html=True)
-        st.markdown('<p align = "center">To understand how the environmental impacts are computed go to the 📖 Methodology tab.</p>', unsafe_allow_html=True)
-        display_impacts_company(impacts, provider, company_multiplier, location="🌎 World")
-    
-    with st.container(border=True):
-        #TODO : corriger ça 
-        st.markdown('<h3 align = "center">That\'s equivalent to ...</h3>', unsafe_allow_html=True)
-        st.markdown('<p align = "center">On the scale of the company, making this request to the LLM over a day is equivalent to the following actions :</p>', unsafe_allow_html=True)
-        display_equivalent_company(impacts, provider, company_multiplier, location="🌎 World")
-            
-    #except Exception as e:
-    #    st.error('Could not find the model in the repository. Please try another model.')
+            st.markdown('<h3 align = "center">Environmental impacts</h3>', unsafe_allow_html=True)
+            st.markdown('<p align = "center">To understand how the environmental impacts are computed go to the 📖 Methodology tab.</p>', unsafe_allow_html=True)
+            display_impacts_company(impacts, provider, company_multiplier, location="🌎 World")
+        
+        with st.container(border=True):
+            #TODO : corriger ça 
+            st.markdown('<h3 align = "center">That\'s equivalent to ...</h3>', unsafe_allow_html=True)
+            st.markdown('<p align = "center">On the scale of the company, making this request to the LLM over a day is equivalent to the following actions :</p>', unsafe_allow_html=True)
+            display_equivalent_company(impacts, provider, company_multiplier, location="🌎 World")
+                
+    except Exception as e:
+       st.error('Could not find the model in the repository. Please try another model.')
