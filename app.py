@@ -25,15 +25,16 @@ with open( "src/style.css" ) as css:
 
 st.html(HERO_TEXT)
 
-st.markdown(INTRO_TEXT)
+st.markdown(INTRO_TEXT, unsafe_allow_html=True)
 
-tab_calculator, tab_expert, tab_token, tab_method, tab_about = st.tabs(
+tab_calculator, tab_expert, tab_token, tab_method, tab_about, tab_support = st.tabs(
     [
         '🧮 Calculator',
         '🤓 Expert Mode',
         '🪙 Tokens estimator',
         '📖 Methodology',
-        'ℹ️ About'
+        'ℹ️ About',
+        '🩷 Support us'
     ]
 )
 

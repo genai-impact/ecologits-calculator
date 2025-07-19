@@ -1,29 +1,44 @@
 HERO_TEXT = """
 <div align="center">
   <a href="https://ecologits.ai/">
-    <img style="max-height: 80px" alt="EcoLogits" src="https://raw.githubusercontent.com/genai-impact/ecologits/main/docs/assets/logo_light.png">
+    <img style="max-height: 200px" alt="EcoLogits" src="https://raw.githubusercontent.com/genai-impact/ecologits/main/docs/assets/logo_calculator.png">
   </a>
 </div>
 <div align="center">
-  <p style="max-width: 500px; text-align: center">
-    <i><b>EcoLogits</b> is a python library that tracks the <b>energy consumption</b> and <b>environmental 
-    footprint</b> of using <b>generative AI</b> models through APIs.</i>
+  <p style="max-width: 850px; text-align: center">
+    <b>EcoLogits</b> is a python library that tracks the <b>energy consumption</b> and <b>environmental 
+    footprint</b> of using <b>generative AI</b> models through APIs.
+  <br>
+    This Calculator allows a broader access to <b>EcoLogits</b> estimates through a visual application.</i>
+ 
   </p>
-</div>
-<h1 align="center">🧮 EcoLogits Calculator</h1>
-<div align="center">
-  <p style="max-width: 500px; text-align: center">
-    <i>allows a broader access to <b>EcoLogits</b> through a visual application.</i>
-  </p>
+
 </div>
 <br>
 """
 
 INTRO_TEXT = """
-This tool is developed and maintained by [GenAI Impact](https://genai-impact.org/) non-profit. Learn more about 
-🌱 EcoLogits by reading the documentation on [ecologits.ai](https://ecologits.ai).
+<div style="background-color:#d4edda; padding:5px; border-radius:10px; color:#155724;">
+<p>
+  EcoLogits Calculator is developed and maintained by 
+  <a href = "https://genai-impact.org/" > GenAI Impact </a> non-profit. 
+  To learn more about EcoLogits documentation visit 
+  <a href="https://ecologits.ai" > ecologits.ai </a>
+</p>
+
+</div>
+<br>
+"""
+
+ALT_INTRO_TEXT = """
+<p>
+  This tool is developed and maintained by 
+  <a href = "https://genai-impact.org/" > GenAI Impact </a> non-profit. 
+  To learn more about EcoLogits visit 
+  <a href="https://ecologits.ai" > ecologits.ai </a>
+</p>
  
-🩷 Support us by giving a ⭐️ on our [GitHub repository](https://github.com/genai-impact/ecologits) and by following our [LinkedIn page](https://www.linkedin.com/company/genai-impact/).
+  
 """
 
 WARNING_CLOSED_SOURCE = """
