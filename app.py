@@ -7,7 +7,8 @@ from src.content import (
     CITATION_TEXT,
     LICENCE_TEXT,
     INTRO_TEXT,
-    METHODOLOGY_TEXT
+    METHODOLOGY_TEXT,
+    SUPPORT_TEXT
 )
 
 from src.expert import expert_mode
@@ -57,6 +58,10 @@ with tab_method:
 with tab_about:
 
     st.markdown(ABOUT_TEXT, unsafe_allow_html=True)
+
+with tab_support:
+    st.markdown(SUPPORT_TEXT, unsafe_allow_html=True)
+
 
 with st.expander('📚 Citation'):
     st.html(CITATION_LABEL)

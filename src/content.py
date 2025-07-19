@@ -30,17 +30,6 @@ INTRO_TEXT = """
 <br>
 """
 
-ALT_INTRO_TEXT = """
-<p>
-  This tool is developed and maintained by 
-  <a href = "https://genai-impact.org/" > GenAI Impact </a> non-profit. 
-  To learn more about EcoLogits visit 
-  <a href="https://ecologits.ai" > ecologits.ai </a>
-</p>
- 
-  
-"""
-
 WARNING_CLOSED_SOURCE = """
 ⚠️ The model architecture has not been publicly released, expect lower precision of estimations.
 """
@@ -151,9 +140,9 @@ We also welcome any open-source contributions on 🌱 **[EcoLogits](https://gith
 </p>
 
 ## 🙌 Acknowledgement
-We thank [Data For Good](https://dataforgood.fr/) and [Boavizta](https://boavizta.org/en) for supporting the 
-development of this project. Their contributions of tools, best practices, and expertise in environmental impact 
-assessment have been invaluable.
+We thank [Data For Good](https://dataforgood.fr/) and [Boavizta](https://boavizta.org/en) for supporting this project.
+Their contributions of tools, best practices, and expertise in environmental impact 
+assessment have been extremely valuable.
 We also extend our gratitude to the open-source contributions of 🤗 [Hugging Face](huggingface.com) on the LLM-Perf 
 Leaderboard.
 
@@ -161,7 +150,44 @@ Leaderboard.
 For general question on the project, please use the [GitHub thread](https://github.com/genai-impact/ecologits/discussions/45). 
 Otherwise use our contact form on [genai-impact.org/contact](https://genai-impact.org/contact/).
 """
+SUPPORT_TEXT = r"""
+## How to support 
+At GenAI Impact, our projects are powered by the passion and dedication of our team. 
+Since its first release in June 2024, this calculator has been **developped and maintained entirely on a volunteer basis by our members**.
+We aim to keep this tool available as a free and open-source ressource for the common good. We need your support to reach this goal, this is how you can help.
 
+### If you have 1 second
+3 easy ways to help this project  :
+- Give a ❤️ like to this space
+- Give a ⭐ to the EcoLogits repo on [GitHub](https://github.com/genai-impact/ecologits)
+- Follow us on [LinkedIn](https://fr.linkedin.com/company/genai-impact)
+
+### If you have 5 minutes
+Share your feedback, ask questions, help other members of the community !
+
+Engage the discussion with us :
+- Start a new discussion on this space or on this 
+[GitHub thread](https://github.com/genai-impact/ecologits/discussions/45) 
+- Use the contact form on [GenAI Impact website](https://genai-impact.org/contact/)
+- message us on [LinkedIn](https://www.linkedin.com/company/genai-impact/).
+
+### If you have more to give
+
+##### As an individual
+We welcome any open source contribution ! You can :
+- Contribute on **[EcoLogits](https://github.com/genai-impact/ecologits)** or on 
+**EcoLogits Calculator**.
+- Become a an active member of [GenAI Impact ](https://genai-impact.org/contact/) non profit. Get involved in our broader mission !
+
+
+##### As an organization
+If EcoLogits Calculator brings value to your organization, customers or communities you can help finance this project.
+- Become a **sponsor**
+- Become a **benefactor member** if you are a public sector or non-profit organization or a university.
+
+Contact us on [GenAI Impact ](https://genai-impact.org/contact/)
+
+"""
 
 METHODOLOGY_TEXT = r"""
 ## 📖 Methodology
