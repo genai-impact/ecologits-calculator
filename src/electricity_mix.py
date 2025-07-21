@@ -142,7 +142,7 @@ COUNTRY_CODES = [
     ("🇦 Netherlands Antilles", "ANT"),
     ("🇦🇲 Armenia", "ARM"),
     ("🇦🇱 Albania", "ALB"),
-    ("🇦🇪 United Arab Emirates", "ARE")
+    ("🇦🇪 United Arab Emirates", "ARE"),
 ]
 
 
@@ -156,20 +156,19 @@ def find_electricity_mix(code: str):
             res += [float(row[code])]
     return res
 
-def dataframe_electricity_mix(countries: list):
 
-    df = pd.read_csv('src/data/electricity_mix.csv')
-    df['name_unit'] = df['name'] + ' (' + df['unit'] + ')'
-    df = df[['name_unit'] + [x[1] for x in COUNTRY_CODES if x[0] in countries]]
+def dataframe_electricity_mix(countries: list):
+    df = pd.read_csv("src/data/electricity_mix.csv")
+    df["name_unit"] = df["name"] + " (" + df["unit"] + ")"
+    df = df[["name_unit"] + [x[1] for x in COUNTRY_CODES if x[0] in countries]]
 
     df_melted = df.melt(
-        id_vars=['name_unit'],
+        id_vars=["name_unit"],
         value_vars=[x[1] for x in COUNTRY_CODES if x[0] in countries],
-        var_name='country',
-        value_name='value')
+        var_name="country",
+        value_name="value",
+    )
 
-    df = df_melted.pivot(columns='name_unit', 
-                        index='country',
-                        values='value')
+    df = df_melted.pivot(columns="name_unit", index="country", values="value")
 
     return df

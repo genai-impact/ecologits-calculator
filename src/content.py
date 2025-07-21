@@ -18,7 +18,7 @@ HERO_TEXT = """
 """
 
 INTRO_TEXT = """
-<div style="background-color:#d4edda; padding:5px; border-radius:10px; color:#155724;">
+<div align = "center"; style="background-color:#d4edda; padding:10px; border-radius:10px; color:#155724;">
 <p>
   EcoLogits Calculator is developed and maintained by 
   <a href = "https://genai-impact.org/" > GenAI Impact </a> non-profit. 
@@ -76,7 +76,7 @@ ABOUT_TEXT = r"""
 The rapid evolution of generative AI is reshaping numerous industries and aspects of our daily lives. While these 
 advancements offer some benefits, they also **pose substantial environmental challenges that cannot be overlooked**. 
 Plus the issue of AI's environmental footprint has been mainly discussed at training stage but rarely at the inference 
-stage. That is an issue because **inference impacts for LLMs can largely overcome the training impacts when deployed 
+stage. That is an issue because **inference impacts for large langauge models (LLMs) can largely overcome the training impacts when deployed 
 at large scales**.
 At **[GenAI Impact](https://genai-impact.org/) we are dedicated to understanding and mitigating the environmental 
 impacts of generative AI** through rigorous research, innovative tools, and community engagement. Especially, in early 
@@ -134,15 +134,17 @@ We also welcome any open-source contributions on 🌱 **[EcoLogits](https://gith
   <a href="https://creativecommons.org/licenses/by-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">
     CC BY-SA 4.0
   </a>
-  <img style="display:inline-block;height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt="">
-  <img style="display:inline-block;height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt="">
-  <img style="display:inline-block;height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt="">
+  <br>
+  <br>
+  <img style="display:inline-block;height:5px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt="">
+  <img style="display:inline-block;height:5px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt="">
+  <img style="display:inline-block;height:5px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt="">
 </p>
 
 ## 🙌 Acknowledgement
-We thank [Data For Good](https://dataforgood.fr/) and [Boavizta](https://boavizta.org/en) for supporting this project.
-Their contributions of tools, best practices, and expertise in environmental impact 
-assessment have been extremely valuable.
+We thank [Data For Good](https://dataforgood.fr/) and [Boavizta](https://boavizta.org/en) for supporting the 
+development of this project. Their contributions of tools, best practices, and expertise in environmental impact 
+assessment have been invaluable.
 We also extend our gratitude to the open-source contributions of 🤗 [Hugging Face](huggingface.com) on the LLM-Perf 
 Leaderboard.
 
@@ -150,6 +152,7 @@ Leaderboard.
 For general question on the project, please use the [GitHub thread](https://github.com/genai-impact/ecologits/discussions/45). 
 Otherwise use our contact form on [genai-impact.org/contact](https://genai-impact.org/contact/).
 """
+
 SUPPORT_TEXT = r"""
 ## How to support 
 At GenAI Impact, our projects are powered by the passion and dedication of our team. 
@@ -262,7 +265,7 @@ We multiply that value by the GHG emissions of the request to get an equivalent 
 These equivalents are computed based on the request impacts scaled to a worldwide adoption use case. We imply that the
 same request is done 1% of the planet everyday for 1 year, and then compute impact equivalents.
 $$
-I_{scaled} = I_{request} * [1 \\% \ \text{of}\ 8B\ \text{people on earth}] * 365\ \text{days}
+I_{scaled} = I_{request} * [1 \% \ \text{of}\ 8B\ \text{people on earth}] * 365\ \text{days}
 $$
 #### Number of 💨 wind turbines or ☢️ nuclear plants
 We compare the ⚡️ direct energy consumption (scaled) by the energy production of wind turbines and nuclear power 
