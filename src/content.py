@@ -30,6 +30,18 @@ INTRO_TEXT = """
 <br>
 """
 
+HOW_TO_TEXT = """
+Chose a provider, a model and an example of usage (prompts). 
+
+1.The calculator will provide you estimates of environmental impacts of this example. To learn more about how these impacts are computed check the Methodology tab.
+
+2. You can then check for equivalences of these impacts.
+
+3. The calculator will extrapolate your example to simulate how impacts can scale rapidly if only one percent of the world population make the same prompt everyday for one year.
+
+
+"""
+
 WARNING_CLOSED_SOURCE = """
 ⚠️ The model architecture has not been publicly released, expect lower precision of estimations.
 """
@@ -288,7 +300,7 @@ We divide the scaled GHG emissions by this value to get the equivalent number of
 
 CITATION_LABEL = "BibTeX citation for EcoLogits Calculator and the EcoLogits library:"
 CITATION_TEXT = r"""@misc{ecologits-calculator,
-  author={Samuel Rincé, Adrien Banse and Valentin Defour},
+  author={Samuel Rincé, Adrien Banse, Valentin Defour, Caroline Jean-Pierre},
   title={EcoLogits Calculator},
   year={2025},
   howpublished= {\url{https://huggingface.co/spaces/genai-impact/ecologits-calculator}},
