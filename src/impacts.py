@@ -35,7 +35,7 @@ def get_impacts(model, active_params, total_params, mix_ghg, mix_adpe, mix_pe):
 ############################################################################################################
 
 
-def display_impacts(impacts, provider, location):
+def display_impacts(impacts, provider, range_percent_impact_one_sided_calculated, location):
 
     st.divider()
 
@@ -54,6 +54,13 @@ def display_impacts(impacts, provider, location):
         <div style="text-align: center;"><i>Evaluates the electricity consumption<i>
         </div>
         """, unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 10px;">Error range</div>
+        <div style="font-size: 10px;">±{range_percent_impact_one_sided_calculated["energy"]} %</div>
+        </div>
+        """, unsafe_allow_html = True)
+        
 
     with col_ghg:
         st.markdown("""
@@ -65,6 +72,12 @@ def display_impacts(impacts, provider, location):
         st.latex(f'\Large {impacts.gwp.magnitude:.3g} \ \large {impacts.gwp.units}')
         st.markdown("""
         <div style="text-align: center;"><i>Evaluates the effect on climate change<i>
+        </div>
+        """, unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 10px;">Error range</div>
+        <div style="font-size: 10px;">±{range_percent_impact_one_sided_calculated["gwp"]} %</div>
         </div>
         """, unsafe_allow_html = True)
 
@@ -96,6 +109,12 @@ def display_impacts(impacts, provider, location):
         <div style="text-align: center;"><i>Evaluates the use of metals and minerals<i>
         </div>
         """, unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 10px;">Error range</div>
+        <div style="font-size: 10px;">±{range_percent_impact_one_sided_calculated["adpe"]} %</div>
+        </div>
+        """, unsafe_allow_html = True)
 
     with col_pe:
         st.markdown("""
@@ -108,6 +127,12 @@ def display_impacts(impacts, provider, location):
         st.markdown("""
         <div style="height: 10px;"></div>
         <div style="text-align: center;"><i>Evaluates the use of energy resources<i>
+        </div>
+        """, unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 10px;">Error range</div>
+        <div style="font-size: 10px;">±{range_percent_impact_one_sided_calculated["pe"]} %</div>
         </div>
         """, unsafe_allow_html = True)
 
@@ -123,10 +148,16 @@ def display_impacts(impacts, provider, location):
         <div style="text-align: center;"><i>Evaluates the use of water<i>
         </div>
         """, unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 10px;">Error range</div>
+        <div style="font-size: 10px;">±{range_percent_impact_one_sided_calculated["water"]} %</div>
+        </div>
+        """, unsafe_allow_html = True)
 
 
 #################################################################################################
-def display_impacts_company(impacts, provider, company_multiplier, location):
+def display_impacts_company(impacts, provider, company_multiplier, range_percent_impact_one_sided_calculated, location):
 
     st.divider()
 
@@ -162,6 +193,12 @@ def display_impacts_company(impacts, provider, company_multiplier, location):
         <div style="text-align: center;"><i>Evaluates the electricity consumption<i>
         </div>
         """, unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 10px;">Error range</div>
+        <div style="font-size: 10px;">±{range_percent_impact_one_sided_calculated["energy"]} %</div>
+        </div>
+        """, unsafe_allow_html = True)
 
     with col_ghg:
         st.markdown("""
@@ -183,6 +220,13 @@ def display_impacts_company(impacts, provider, company_multiplier, location):
         <div style="text-align: center;"><i>Evaluates the effect on climate change<i>
         </div>
         """, unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 10px;">Error range</div>
+        <div style="font-size: 10px;">±{range_percent_impact_one_sided_calculated["gwp"]} %</div>
+        </div>
+        """, unsafe_allow_html = True)
+        
 
     with col_adpe:
         st.markdown("""
@@ -210,6 +254,12 @@ def display_impacts_company(impacts, provider, company_multiplier, location):
         st.latex(f'\Large {company_impact:.3g} \ \large {impacts_adpe_units}')
         st.markdown("""
         <div style="text-align: center;"><i>Evaluates the use of metals and minerals<i>
+        </div>
+        """, unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 10px;">Error range</div>
+        <div style="font-size: 10px;">±{range_percent_impact_one_sided_calculated["adpe"]} %</div>
         </div>
         """, unsafe_allow_html = True)
 
@@ -240,6 +290,12 @@ def display_impacts_company(impacts, provider, company_multiplier, location):
         <div style="text-align: center;"><i>Evaluates the use of energy resources<i>
         </div>
         """, unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 10px;">Error range</div>
+        <div style="font-size: 10px;">±{range_percent_impact_one_sided_calculated["pe"]} %</div>
+        </div>
+        """, unsafe_allow_html = True)
 
     with col_water: 
         st.markdown("""
@@ -268,6 +324,12 @@ def display_impacts_company(impacts, provider, company_multiplier, location):
         st.latex(f'\Large {company_impact:.3g} \ \large {impacts_water_units}')
         st.markdown("""
         <div style="text-align: center;"><i>Evaluates the use of water<i>
+        </div>
+        """, unsafe_allow_html = True)
+        st.markdown(f"""
+        <div style="text-align: center;">
+        <div style="font-size: 10px;">Error range</div>
+        <div style="font-size: 10px;">±{range_percent_impact_one_sided_calculated["water"]} %</div>
         </div>
         """, unsafe_allow_html = True)
 

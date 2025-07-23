@@ -180,6 +180,29 @@ def format_water(water: Water) -> Quantity:
         val = val.to("mL")
     return val
 
+def range_percent_impact_one_sided(impacts: Impacts) -> float:
+    impacts_energy_mean = (impacts.energy.value.max + impacts.energy.value.min)/2
+    range_percent_energy_one_sided = (impacts.energy.value.max - impacts.energy.value.min) / (2* impacts_energy_mean) * 100
+    impacts_gwp_mean = (impacts.gwp.value.max + impacts.gwp.value.min)/2
+    range_percent_gwp_one_sided = (impacts.gwp.value.max - impacts.gwp.value.min) / (2* impacts_gwp_mean) * 100
+    impacts_adpe_mean = (impacts.adpe.value.max + impacts.adpe.value.min)/2
+    range_percent_adpe_one_sided = (impacts.adpe.value.max - impacts.adpe.value.min) / (2* impacts_adpe_mean) * 100
+    impacts_pe_mean = (impacts.pe.value.max + impacts.pe.value.min)/2
+    range_percent_pe_one_sided = (impacts.pe.value.max - impacts.pe.value.min) / (2* impacts_pe_mean) * 100
+    impacts_water_mean = (impacts.water.value.max + impacts.water.value.min)/2
+    range_percent_water_one_sided = (impacts.water.value.max - impacts.water.value.min) / (2* impacts_water_mean) * 100
+        
+    results = {
+        "energy" : range_percent_energy_one_sided,
+        "gwp": range_percent_gwp_one_sided,
+        "adpe": range_percent_adpe_one_sided,
+        "pe": range_percent_pe_one_sided,
+        "water" : range_percent_water_one_sided
+    }
+    return results
+
+
+
 def format_impacts(impacts: Impacts) -> QImpacts:
 
     try:

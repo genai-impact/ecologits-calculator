@@ -1,7 +1,7 @@
 import streamlit as st
 from ecologits.impacts.llm import compute_llm_impacts
 
-from src.utils import format_impacts, average_range_impacts
+from src.utils import format_impacts, average_range_impacts, range_percent_impact_one_sided
 from src.impacts import display_impacts
 from src.electricity_mix import COUNTRY_CODES, find_electricity_mix, dataframe_electricity_mix
 from src.models import load_models
@@ -127,13 +127,15 @@ def expert_mode():
                 provider = provider_selected
             )
     
+
+    range_percent_impact_one_sided_calculated = range_percent_impact_one_sided(impacts)
     impacts, usage, embodied = format_impacts(impacts)
     
     with st.container(border = True):
 
         st.markdown('<h3 align="center">Environmental Impacts</h2>', unsafe_allow_html = True)
 
-        display_impacts(impacts, provider_exp, location)
+        display_impacts(impacts, provider_exp, range_percent_impact_one_sided_calculated, location)
 
     with st.expander('⚖️ Usage vs Embodied'):
 

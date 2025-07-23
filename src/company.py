@@ -2,7 +2,7 @@ import streamlit as st
 
 from ecologits.tracers.utils import llm_impacts
 from src.impacts import get_impacts, display_impacts_company, display_equivalent_company
-from src.utils import format_impacts
+from src.utils import format_impacts, range_percent_impact_one_sided
 from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_BOTH
 from src.models import load_models
 
@@ -98,6 +98,7 @@ def company_mode():
                         request_latency=100000
                     )
 
+        range_percent_impact_one_sided_calculated = range_percent_impact_one_sided(impacts)
         impacts, _, _ = format_impacts(impacts)
 
 
@@ -106,7 +107,7 @@ def company_mode():
 
             st.markdown('<h3 align = "center">Environmental impacts</h3>', unsafe_allow_html=True)
             st.markdown('<p align = "center">To understand how the environmental impacts are computed go to the 📖 Methodology tab.</p>', unsafe_allow_html=True)
-            display_impacts_company(impacts, provider, company_multiplier, location="🌎 World")
+            display_impacts_company(impacts, provider, company_multiplier, range_percent_impact_one_sided_calculated, location="🌎 World")
         
         with st.container(border=True):
             #TODO : corriger ça 
