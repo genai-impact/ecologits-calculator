@@ -1,14 +1,16 @@
 import streamlit as st
 
 from ecologits.tracers.utils import llm_impacts
-from src.impacts import get_impacts, display_impacts, display_equivalent
+from src.impacts import get_impacts, display_impacts, display_equivalent_ghg, display_equivalent_energy
 from src.utils import format_impacts
-from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_BOTH
+from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_BOTH, HOW_TO_TEXT
 from src.models import load_models
 
 from src.constants import PROMPTS
 
 def calculator_mode():
+
+    st.expander("How to Use this calculator", expanded = False).markdown(HOW_TO_TEXT)
 
     with st.container(border=True):
         
@@ -59,14 +61,20 @@ def calculator_mode():
         with st.container(border=True):
 
             st.markdown('<h3 align = "center">Environmental impacts</h3>', unsafe_allow_html=True)
-            st.markdown('<p align = "center">To understand how the environmental impacts are computed go to the 📖 Methodology tab.</p>', unsafe_allow_html=True)
-            display_impacts(impacts)
+            #st.markdown('<p align = "center">To understand how the environmental impacts are computed go to the 📖 Methodology tab.</p>', unsafe_allow_html=True)
+            display_impacts(impacts)                 
         
-        with st.container(border=True):
-            
-            st.markdown('<h3 align = "center">That\'s equivalent to ...</h3>', unsafe_allow_html=True)
+        with st.container(border=False):
+            st.markdown('<h3 align = "center">Equivalences</h3>', unsafe_allow_html=True)
             st.markdown('<p align = "center">Making this request to the LLM is equivalent to the following actions :</p>', unsafe_allow_html=True)
-            display_equivalent(impacts)
+            page = st.radio(' ', ['Energy' , 'GHG'], horizontal=True)
+        
+        with st.container(border=True):                                            
+             if page == 'Energy' :
+                display_equivalent_energy(impacts)
+             else :  
+                display_equivalent_ghg(impacts)
+        
             
     except Exception as e:
         st.error('Could not find the model in the repository. Please try another model.')
