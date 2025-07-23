@@ -309,7 +309,7 @@ def range_plot (mean_val, min_val, max_val, unit):
     )
 
     # Add labels
-    for val, pos, text in zip([max_val, min_val]*2,[0.85,0.85,1.6,1.6], ["Max", "Min", f'{max_val:.3g}{' '}{unit}', f'{min_val:.3g}{' '}{unit}']):
+    for val, pos, text in zip([max_val, min_val]*2,[0.85,0.85,1.6,1.6], ["Max", "Min", f'{max_val:.3g} {unit}', f'{min_val:.3g} {unit}']):
         fig.add_annotation(
             x=val,
             y=-pos,
