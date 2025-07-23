@@ -6,7 +6,7 @@ from src.utils import (
     format_energy_eq_electricity_production,
     format_energy_eq_physical_activity,
     format_gwp_eq_airplane_paris_nyc,
-    format_gwp_eq_streaming,
+    format_gwp_eq_streaming, range_plot,
     PhysicalActivity,
     EnergyProduction
 )
@@ -24,32 +24,45 @@ def display_impacts(impacts):
 
     st.divider()
 
-    col_energy, col_ghg, col_adpe, col_pe, col_water = st.columns(5)
+    col1, col_energy, col_ghg, col2 = st.columns([1,2,2,1])
 
     with col_energy:
-        st.markdown('<h4 align="center">⚡️ Energy</h4>', unsafe_allow_html = True)
-        st.latex(f'\Large {impacts.energy.magnitude:.3g} \ \large {impacts.energy.units}')
-        st.markdown(f'<p align="center"><i>Evaluates the electricity consumption<i></p>', unsafe_allow_html = True)
+ 
+        st.markdown(f"""<p style='font-size:30px;text-align: center;margin-bottom :2px'>⚡️</p><p style='font-size:30px;text-align: center;margin-bottom :2px'><strong>Energy</p>""", unsafe_allow_html = True)
+        st.markdown(f'<p align="center">Electricity consumption</p>', unsafe_allow_html = True)
+        range_plot(impacts.energy.magnitude,impacts.energy_min.magnitude, impacts.energy_max.magnitude, impacts.energy.units)
+                
 
     with col_ghg:
-        st.markdown('<h4 align="center">🌍️ GHG Emissions</h4>', unsafe_allow_html = True)
-        st.latex(f'\Large {impacts.gwp.magnitude:.3g} \ \large {impacts.gwp.units}')
-        st.markdown(f'<p align="center"><i>Evaluates the effect on global warming<i></p>', unsafe_allow_html = True)
+
+        st.markdown(f"""<p style='font-size:30px;text-align: center;margin-bottom :2px'>🌍️</p><p style='font-size:30px;text-align: center;margin-bottom :2px'><strong>GHG Emissions</p>""", unsafe_allow_html = True)
+        st.markdown(f'<p align="center">Effect on global warming</p>', unsafe_allow_html = True)    
+        range_plot(impacts.gwp.magnitude,impacts.gwp_min.magnitude, impacts.gwp_max.magnitude, impacts.gwp.units)
+
+    st.markdown(f'<br>', unsafe_allow_html = True)
+    
+    col_adpe, col_pe, col_water = st.columns(3)
 
     with col_adpe:
-        st.markdown('<h4 align="center">🪨 Abiotic Resources</h4>', unsafe_allow_html = True)
-        st.latex(f'\Large {impacts.adpe.magnitude:.3g} \ \large {impacts.adpe.units}')
-        st.markdown(f'<p align="center"><i>Evaluates the use of metals and minerals<i></p>', unsafe_allow_html = True)
+        st.markdown(f"""<p style='font-size:30px;text-align: center;margin-bottom :2px'>🪨</p>""", unsafe_allow_html = True)
+        st.markdown(f"""<p style='font-size:30px;text-align: center;margin-bottom :2px'><strong>Abiotic Resources</p>""", unsafe_allow_html = True)
+        st.markdown('<p align="center"> Use of metals and minerals</p>', unsafe_allow_html = True)
+        range_plot(impacts.adpe.magnitude,impacts.adpe_min.magnitude, impacts.adpe_max.magnitude, impacts.adpe.units)
+    
 
     with col_pe:
-        st.markdown('<h4 align="center">⛽️ Primary Energy</h4>', unsafe_allow_html = True)
-        st.latex(f'\Large {impacts.pe.magnitude:.3g} \ \large {impacts.pe.units}')
-        st.markdown(f'<p align="center"><i>Evaluates the use of energy resources<i></p>', unsafe_allow_html = True)
+        st.markdown(f"""<p style='font-size:30px;text-align: center;margin-bottom :2px'>⛽️</p>""", unsafe_allow_html = True)
+        st.markdown(f"""<p style='font-size:30px;text-align: center;margin-bottom :2px'><strong>Primary Energy</p>""", unsafe_allow_html = True)
+        st.markdown(f'<p align="center">Use of natural energy resources</p>', unsafe_allow_html = True)
+        range_plot(impacts.pe.magnitude,impacts.pe_min.magnitude, impacts.pe_max.magnitude, impacts.pe.units)
 
     with col_water:
-        st.markdown('<h4 align="center">🚰 Water</h4>', unsafe_allow_html = True)
-        st.latex('\Large Upcoming...')
-        st.markdown(f'<p align="center"><i>Evaluates the use of water<i></p>', unsafe_allow_html = True)
+        st.markdown(f"""<p style='font-size:30px;text-align: center;margin-bottom :2px'>🚰</p>""", unsafe_allow_html = True)
+        st.markdown(f"""<p style='font-size:30px;text-align: center;margin-bottom :2px'><strong>Water</p>""", unsafe_allow_html = True)
+        st.markdown(f'<p align="center">Evaluates the use of water</p>', unsafe_allow_html = True)
+        st.markdown(f"""<p style='font-size:35px;text-align: center'> Upcoming... </p>""", unsafe_allow_html = True)
+        
+        
 
 ############################################################################################################
 
@@ -114,3 +127,4 @@ def display_equivalent(impacts):
         paris_nyc_airplane = format_gwp_eq_airplane_paris_nyc(impacts.gwp)
         st.markdown(f'<h4 align="center">✈️ {round(paris_nyc_airplane.magnitude):,} Paris ↔ NYC</h4>', unsafe_allow_html = True)
         st.markdown(f'<p align="center"><i>Based on GHG emissions<i></p>', unsafe_allow_html = True)
+
