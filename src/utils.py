@@ -100,7 +100,7 @@ YEARLY_IRELAND_ELECTRICITY_CONSUMPTION = q("33 TWh")
 IRELAND_POPULATION_MILLION = 5
 
 # From https://impactco2.fr/outils/comparateur?value=1&comparisons=&equivalent=avion-pny
-AIRPLANE_PARIS_NYC_GWP_EQ = q("177000 kgCO2eq")
+AIRPLANE_PARIS_NYC_GWP_EQ = q("1770 kgCO2eq")
 
 #####################################################################################
 ### IMPACTS FORMATING
