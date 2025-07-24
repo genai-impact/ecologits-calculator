@@ -1,0 +1,5 @@
+streamlit
+ecologits
+pint
+plotly
+tiktoken
