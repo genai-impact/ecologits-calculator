@@ -16,4 +16,4 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_token }}
-        run: git push https://HF_USERNAME:$HF_token@huggingface.co/spaces/genai-impact/ecologits-calculator main
+        run: git push https://vdwow:$HF_token@huggingface.co/spaces/genai-impact/ecologits-calculator main
