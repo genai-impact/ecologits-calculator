@@ -23,7 +23,7 @@ def token_estimator():
 
     user_text_input = st.text_area(
         "Type or paste some text to estimate the amount of tokens.",
-        "EcoLogits is a great project!",
+        "EcoLogits Calculator is a great project!",
     )
 
     _, col2, _ = st.columns([2, 1, 2])
