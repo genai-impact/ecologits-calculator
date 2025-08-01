@@ -22,7 +22,7 @@ with open("src/style.css") as css:
 
 st.html(HERO_TEXT)
 
-st.markdown(INTRO_TEXT, unsafe_allow_html=True)
+st.success(INTRO_TEXT, icon="🌱")
 
 tab_calculator, tab_expert, tab_token, tab_method, tab_about, tab_support = st.tabs(
     [
@@ -56,6 +56,6 @@ with tab_support:
 
 with st.expander("📚 Citation"):
     st.html(CITATION_LABEL)
-    st.html(CITATION_TEXT)
+    st.code(CITATION_TEXT, language="bibtex")
 
 st.html(LICENCE_TEXT)

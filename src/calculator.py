@@ -55,17 +55,17 @@ def calculator_mode():
             df_filtered["warning_arch"].values[0]
             and not df_filtered["warning_multi_modal"].values[0]
         ):
-            st.warning(WARNING_CLOSED_SOURCE)
+            st.warning(WARNING_CLOSED_SOURCE, icon="⚠️")
         if (
             df_filtered["warning_multi_modal"].values[0]
             and not df_filtered["warning_arch"].values[0]
         ):
-            st.warning(WARNING_MULTI_MODAL)
+            st.warning(WARNING_MULTI_MODAL, icon="⚠️")
         if (
             df_filtered["warning_arch"].values[0]
             and df_filtered["warning_multi_modal"].values[0]
         ):
-            st.warning(WARNING_BOTH)
+            st.warning(WARNING_BOTH, icon="⚠️")
 
     try:
         impacts = llm_impacts(
