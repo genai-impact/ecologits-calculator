@@ -6,6 +6,7 @@ import streamlit as st
 
 
 def clean_models_data(df, with_filter=True):
+
     dict_providers = {
         "google": "Google",
         "mistralai": "MistralAI",
@@ -51,6 +52,8 @@ def clean_models_data(df, with_filter=True):
         lambda x: "model-arch-multimodal" in x
     )
 
+    df["warning_reasoning"] = df["name_clean"].apply(lambda x: True if ("o1" in x or "o3" in x) else False)
+
     if with_filter == True:
         df = df[df["name"].isin(models_to_keep)]
 
@@ -66,14 +69,16 @@ def clean_models_data(df, with_filter=True):
             "active_parameters",
             "warning_arch",
             "warning_multi_modal",
+            "warning_reasoning"
         ]
     ]
 
 
 @st.cache_data
 def load_models(filter_main=True):
-    resp = requests.get(MODEL_REPOSITORY_URL)
-    data = json.loads(resp.text)
-    df = pd.DataFrame(data["models"])
+
+    anwser = requests.get(MODEL_REPOSITORY_URL)
+    data_json = json.loads(anwser.text)
+    df = pd.DataFrame(data_json["models"])
 
     return clean_models_data(df, filter_main)

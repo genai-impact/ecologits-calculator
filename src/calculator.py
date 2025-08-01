@@ -1,9 +1,9 @@
 import streamlit as st
 
 from ecologits.tracers.utils import llm_impacts
-from src.impacts import get_impacts, display_impacts, display_equivalent_ghg, display_equivalent_energy
+from src.impacts import display_impacts, display_equivalent_ghg, display_equivalent_energy
 from src.utils import format_impacts
-from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_BOTH, HOW_TO_TEXT
+from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_REASONING, WARNING_BOTH, HOW_TO_TEXT
 from src.models import load_models
 
 from src.constants import PROMPTS
@@ -48,7 +48,7 @@ def calculator_mode():
 
         df_filtered = df[
             (df["provider_clean"] == provider) & (df["name_clean"] == model)
-        ]
+        ].reset_index(drop=True)
 
         if (
             df_filtered["warning_arch"].values[0]
@@ -65,6 +65,11 @@ def calculator_mode():
             and df_filtered["warning_multi_modal"].values[0]
         ):
             st.warning(WARNING_BOTH)
+
+        if df_filtered.loc[0, "warning_reasoning"] == True:
+            st.warning(WARNING_REASONING)
+
+        st.write(df_filtered)
 
     try:
         impacts = llm_impacts(
@@ -94,5 +99,5 @@ def calculator_mode():
                 display_equivalent_ghg(impacts)
         
             
-    except Exception as e:
+    except Exception:
         st.error('Could not find the model in the repository. Please try another model.')

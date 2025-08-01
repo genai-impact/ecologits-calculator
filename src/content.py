@@ -54,6 +54,10 @@ WARNING_BOTH = """
 ⚠️ The model architecture has not been publicly released and is multimodal, expect lower precision of estimations.
 """
 
+WARNING_REASONING = """
+⚠️ The model you selected has a reasoning feature, example prompts have been updated with reasoning-specific tasks. For these tasks, expect a 110% overhead in total output tokens.
+"""
+
 TOKEN_ESTIMATOR_TEXT = """
 A token is the basic unit of text that a language model processes. Think of it as a piece of text that the model breaks down for analysis and generation. Tokens can be:
 
