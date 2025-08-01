@@ -11,7 +11,7 @@ from src.constants import PROMPTS
 
 def calculator_mode():
 
-    st.expander("How to Use this calculator", expanded = False).markdown(HOW_TO_TEXT)
+    st.expander("How to use this calculator?", expanded = False).markdown(HOW_TO_TEXT)
 
     with st.container(border=True):
         df = load_models(filter_main=True)

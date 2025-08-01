@@ -33,7 +33,7 @@ INTRO_TEXT = """
 HOW_TO_TEXT = """
 Chose a provider, a model and an example of usage (prompts). 
 
-1.The calculator will provide you estimates of environmental impacts of this example. To learn more about how these impacts are computed check the Methodology tab.
+1. The calculator will provide you estimates of environmental impacts of this example. To learn more about how these impacts are computed check the Methodology tab.
 
 2. You can then check for equivalences of these impacts.
 
