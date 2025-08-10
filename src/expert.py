@@ -1,7 +1,8 @@
 import streamlit as st
 from ecologits.impacts.llm import compute_llm_impacts
+from ecologits.tracers.utils import DATACENTER_PUE, DATACENTER_WUE
 
-from src.utils import format_impacts, average_range_impacts
+from src.utils import format_impacts, average_range_impacts, range_percent_impact_one_sided
 from src.impacts import display_impacts
 from src.electricity_mix import (
     COUNTRY_CODES,
@@ -104,7 +105,7 @@ def expert_mode():
 
         location = st.selectbox("Location", [x[0] for x in COUNTRY_CODES])
 
-        col4, col5, col6 = st.columns(3)
+        col4, col5 = st.columns(2)
 
         with col4:
             mix_gwp = st.number_input(
@@ -123,6 +124,8 @@ def expert_mode():
                 )[0],
                 format="%0.13f",
             )
+
+        col6, col7 = st.columns(2)    
         with col6:
             mix_pe = st.number_input(
                 "Electricity mix - Primary energy [MJ / kWh]",
@@ -131,6 +134,17 @@ def expert_mode():
                 )[1],
                 format="%0.3f",
             )
+        with col7:
+            mix_wue = st.number_input(
+                "Electricity mix - Off-site Water Usage Efficiency [L / kWh]",
+                find_electricity_mix(
+                    [x[1] for x in COUNTRY_CODES if x[0] == location][0]
+                )[4],
+                format="%0.3f",
+            )
+
+    datacenter_pue = DATACENTER_PUE[provider_exp.lower()]
+    datacenter_wue = DATACENTER_WUE[provider_exp.lower()]
 
     impacts = compute_llm_impacts(
         model_active_parameter_count=active_params,
@@ -140,7 +154,12 @@ def expert_mode():
         if_electricity_mix_gwp=mix_gwp,
         if_electricity_mix_adpe=mix_adpe,
         if_electricity_mix_pe=mix_pe,
+        if_electricity_mix_wue=mix_wue,
+        datacenter_pue=datacenter_pue,
+        datacenter_wue=datacenter_wue,
     )
+
+    range_percent_impact_one_sided_calculated = range_percent_impact_one_sided(impacts)
 
     impacts, usage, embodied = format_impacts(impacts)
 
@@ -149,7 +168,7 @@ def expert_mode():
             '<h3 align="center">Environmental Impacts</h2>', unsafe_allow_html=True
         )
 
-        display_impacts(impacts)
+        display_impacts(impacts, range_percent_impact_one_sided_calculated)
 
     with st.expander("⚖️ Usage vs Embodied"):
         st.markdown(
@@ -161,7 +180,8 @@ def expert_mode():
             "The usage impacts account for the electricity consumption of the model while the embodied impacts account for resource extraction (e.g., minerals and metals), manufacturing, and transportation of the hardware."
         )
 
-        col_ghg_comparison, col_adpe_comparison, col_pe_comparison = st.columns(3)
+
+        col_ghg_comparison, col_adpe_comparison, col_pe_comparison, col_wcf_comparison = st.columns(4)
 
         with col_ghg_comparison:
             fig_gwp = px.pie(
@@ -170,11 +190,13 @@ def expert_mode():
                     average_range_impacts(embodied.gwp.value),
                 ],
                 names=["usage", "embodied"],
-                title="GHG emissions",
+                title="GHG Emissions",
                 color_discrete_sequence=["#00BF63", "#0B3B36"],
                 width=100,
             )
-            fig_gwp.update_layout(showlegend=False, title_x=0.5)
+            fig_gwp.update_layout(
+                showlegend=False, 
+                title_x=0.1)
 
             st.plotly_chart(fig_gwp)
 
@@ -185,12 +207,11 @@ def expert_mode():
                     average_range_impacts(embodied.adpe.value),
                 ],
                 names=["usage", "embodied"],
-                title="Abiotic depletion",
+                title="Abiotic Depletion",
                 color_discrete_sequence=["#0B3B36", "#00BF63"],
                 width=100,
             )
-            fig_adpe.update_layout(showlegend=False, title_x=0.5)
-
+            fig_adpe.update_layout(showlegend=False, title_x=0.05)
             st.plotly_chart(fig_adpe)
 
         with col_pe_comparison:
@@ -200,13 +221,30 @@ def expert_mode():
                     average_range_impacts(embodied.pe.value),
                 ],
                 names=["usage", "embodied"],
-                title="Primary energy",
+                title="Primary Energy",
                 color_discrete_sequence=["#00BF63", "#0B3B36"],
                 width=100,
             )
-            fig_pe.update_layout(showlegend=False, title_x=0.5)
+            fig_pe.update_layout(showlegend=False, title_x=0.05)
 
             st.plotly_chart(fig_pe)
+
+        with col_wcf_comparison:
+            fig_wcf = px.pie(
+                values = [
+                    average_range_impacts(usage.wcf.value), 
+                    average_range_impacts(embodied.wcf.value)],
+                names = ['usage', 'embodied'],
+                title='Water Consumption Footprint',
+                color_discrete_sequence=["#00BF63", "#0B3B36"],
+                width = 100
+                )
+            fig_wcf.update_layout(
+                showlegend=False, 
+                title={'text': 'Water Consumption<br>Footprint', 'x': 0.5, 'xanchor': 'center'}
+                )
+
+            st.plotly_chart(fig_wcf)
 
     with st.expander("🌍️ Location impact"):
         st.markdown(
@@ -219,6 +257,7 @@ def expert_mode():
             options=[x[0] for x in COUNTRY_CODES],
             default=["🇫🇷 France", "🇺🇸 United States", "🇨🇳 China"],
         )
+
 
         try:
             df_comp = dataframe_electricity_mix(countries_to_compare)

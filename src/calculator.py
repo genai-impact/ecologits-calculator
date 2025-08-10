@@ -1,8 +1,8 @@
 import streamlit as st
 
 from ecologits.tracers.utils import llm_impacts
-from src.impacts import get_impacts, display_impacts, display_equivalent_ghg, display_equivalent_energy
-from src.utils import format_impacts
+from src.impacts import get_impacts, display_impacts, display_equivalent_energy, display_equivalent_ghg, display_equivalent_wcf
+from src.utils import format_impacts, range_percent_impact_one_sided
 from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_BOTH, HOW_TO_TEXT
 from src.models import load_models
 
@@ -75,24 +75,27 @@ def calculator_mode():
             request_latency=100000,
         )
 
+        range_percent_impact_one_sided_calculated = range_percent_impact_one_sided(impacts)
         impacts, _, _ = format_impacts(impacts)
 
         with st.container(border=True):
 
             st.markdown('<h3 align = "center">Environmental impacts</h3>', unsafe_allow_html=True)
-            #st.markdown('<p align = "center">To understand how the environmental impacts are computed go to the 📖 Methodology tab.</p>', unsafe_allow_html=True)
-            display_impacts(impacts)                 
+            st.markdown('<p align = "center">To understand how the impacts are computed, visit the 📖 Methodology tab.</p>', unsafe_allow_html=True)
+            display_impacts(impacts, range_percent_impact_one_sided_calculated)                 
         
         with st.container(border=False):
             st.markdown('<h3 align = "center">Equivalences</h3>', unsafe_allow_html=True)
-            st.markdown('<p align = "center">Making this request to the LLM is equivalent to the following actions :</p>', unsafe_allow_html=True)
-            page = st.radio(' ', ['Energy' , 'GHG'], horizontal=True)
+            st.markdown('<p align = "center">Making this request to the LLM is equivalent to the following actions:</p>', unsafe_allow_html=True)
+            page = st.radio(' ', ['Energy' , 'GHG', 'Water'], horizontal=True, key='calculator_page_radio')
         
         with st.container(border=True):                                            
-             if page == 'Energy' :
+            if page == 'Energy' :
                 display_equivalent_energy(impacts)
-             else :  
-                display_equivalent_ghg(impacts)
+            elif page == 'GHG' :  
+                display_equivalent_ghg(impacts)    
+            else :  
+                display_equivalent_wcf(impacts)
         
             
     except Exception as e:

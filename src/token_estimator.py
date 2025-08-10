@@ -26,11 +26,11 @@ def token_estimator():
         "EcoLogits is a great project!",
     )
 
-    _, col2, _ = st.columns([2, 1, 2])
+    _, col2, _ = st.columns([2, 2, 2])
 
     with col2:
         st.metric(
-            label="tokens estimated amount",
+            label="Estimated Tokens Count",
             # label_visibility = 'hidden',
             value=num_tokens_from_string(user_text_input, "cl100k_base"),
             border=True,

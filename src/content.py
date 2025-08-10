@@ -33,6 +33,18 @@ Chose a provider, a model and an example of usage (prompts).
 
 """
 
+HOW_TO_TEXT_COMPANY = """
+Chose a provider, a model, an example of usage (prompts), your company employee count, what percentage of them use large language models daily, and how many requests they send per day. 
+
+1. The calculator will provide you estimates of environmental impacts of this example. To learn more about how these impacts are computed check the Methodology tab.
+
+2. You can then check for equivalences of these impacts.
+
+3. The calculator will extrapolate your example to simulate how impacts can scale rapidly if only one percent of the world population make the same prompt everyday for one year.
+
+
+"""
+
 WARNING_CLOSED_SOURCE = """
 The model architecture has not been publicly released, expect lower precision of estimations.
 """
@@ -85,7 +97,7 @@ At **[GenAI Impact](https://genai-impact.org/) we are dedicated to understanding
 
 ## 🙋 FAQ 
 
-**How we assess the impacts of closed-source models?**
+**How do we assess the impacts of closed-source models?**
 
 Environmental impacts are calculated based on model architecture and parameter count. For closed-source models, we lack transparency from providers, so we estimate parameter counts using available information. For GPT models, we based our estimates on leaked GPT-4 architecture and scaled parameters count for GPT-4-Turbo and GPT-4o based on pricing differences. For other proprietary models like Anthropic's Claude, we assume similar impacts for models released around the same time with similar performance on public benchmarks. Please note that these estimates are based on assumptions and may not be exact. Our methods are open-source and transparent so you can always see the hypotheses we use.
 
@@ -216,6 +228,7 @@ Additionally, to ⚡️ **direct energy consumption** the environmental impacts 
 * 🌍 **Global Warming Potential** (GWP): Potential impact on global warming in kgCO2eq (commonly known as GHG/carbon emissions).
 * 🪨 **Abiotic Depletion Potential for Elements** (ADPe): Impact on the depletion of non-living resources such as minerals or metals in kgSbeq.
 * ⛽️ **Primary Energy** (PE): Total energy consumed from primary sources in MJ.
+* 💧 **Water Use** : Water consumption from this request. 
 
 ### Principles, Data and Hypotheses
 We use a **bottom-up methodology** to model impacts, meaning that we will estimate the impacts of low-level physical components to then estimate the impacts at software level (in that case an LLM inference). We also rely on **Life Cycle Approach (LCA) proxies and approach** to model both usage and embodied phases with multi-criteria impacts. If you are interested in this approach we recommend you to read the following [Boavizta](https://boavizta.org/) resources.
@@ -228,6 +241,8 @@ We leverage **open data to estimate the environmental impacts**, here is an exha
 * [LLM-Perf Leaderboard](https://huggingface.co/spaces/optimum/llm-perf-leaderboard) to estimate GPU energy consumption and latency based on the model architecture and number of output tokens.
 * [Boavizta API](https://github.com/Boavizta/boaviztapi) to estimate server embodied impacts and base energy consumption.
 * [ADEME Base Empreinte®](https://base-empreinte.ademe.fr/) for electricity mix impacts per country.
+* [World Resource Institute](https://www.wri.org/research/guidance-calculating-water-use-embedded-purchased-electricity) for the water withdrawal factor (WWF) and water consumption factor (WCF) for different countries. 
+* [Various sources from companies' sustainability reports](https://docs.google.com/spreadsheets/d/1XvKNhqJJ3e0wlUlSOcv-HS8jIwjCJBEQYgNhkVwA7ac/edit?usp=sharing) for their on-site water usage efficiencies and power usage efficiencies.
 
 Finally here are the **main hypotheses** we have made to compute the impacts.
 
@@ -264,6 +279,10 @@ We compare the 🌍 GHG emissions of the request and of streaming a video. From 
 
 We multiply that value by the GHG emissions of the request to get an equivalent in hours of video streaming.
 
+#### 🚰 Bottled waters
+
+We compare the water consumption to a standard 75cL water bottle. 
+
 ### Scaled impacts
 
 These equivalents are computed based on the request impacts scaled to a worldwide adoption use case. We imply that the same request is done 1% of the planet everyday for 1 year, and then compute impact equivalents.
@@ -290,12 +309,19 @@ We compare the 🌍 GHG emissions (scaled) of the request and of a return flight
 
 We divide the scaled GHG emissions by this value to get the equivalent number of return flights.
 
+#### Number of Olympic-sized swimming pools 🏊🏼
+
+We compare the scaled water consumption to the number of Olympic-sized swimming pools it can fill. From the [2021-2025 facility rules of the FINA](https://web.archive.org/web/20240810051238/https://resources.fina.org/fina/document/2022/02/08/77c3058d-b549-4543-8524-ad51a857864e/210805-Facilities-Rules_clean.pdf), an Olympic-sized swimming pool measures: 50 meters long, 25 meters wide, and a minimum of 2 meters deep. So the volume is 50 \* 25 \* 2 = 2500 cubic meters, or 2.5 million Liters.
+
+We divide the scaled water consumption footprint by this value to get the equivalent number of Olympic-sized swimming pools.
+
+
 #### If you are motivated to help us test and enhance this methodology [contact us](https://genai-impact.org/contact/)! 💪
 """
 
 CITATION_LABEL = "BibTeX citation for EcoLogits Calculator and the EcoLogits library:"
 CITATION_TEXT = """@misc{ecologits_calculator,
-  author={Samuel Rincé, Adrien Banse, Valentin Defour, Caroline Jean-Pierre},
+  author={Samuel Rincé, Adrien Banse, Valentin Defour, Caroline Jean-Pierre, Chieh Hsu},
   title={EcoLogits Calculator},
   year={2025},
   howpublished= {\\url{https://huggingface.co/spaces/genai-impact/ecologits-calculator}},
