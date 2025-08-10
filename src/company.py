@@ -1,14 +1,17 @@
 import streamlit as st
 
 from ecologits.tracers.utils import llm_impacts
-from src.impacts import get_impacts, display_impacts_company, display_equivalent_company
+from src.impacts import get_impacts, display_impacts, display_equivalent_energy, display_equivalent_ghg, display_equivalent_wcf
 from src.utils import format_impacts, range_percent_impact_one_sided
-from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_BOTH
+from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_BOTH, HOW_TO_TEXT_COMPANY
 from src.models import load_models
 
 from src.constants import PROMPTS
 
 def company_mode():
+
+    st.expander("How to use this calculator?", expanded = False).markdown(HOW_TO_TEXT_COMPANY)
+
 
     st.markdown("### 👩🏻‍💻 Calculator for companies")
 
@@ -59,7 +62,7 @@ def company_mode():
             company_size = st.number_input(
                 label="Company size (in number of employees)",
                 min_value=1,
-                value=10,   # valeur par défaut
+                value=10,   
                 step=1,
                 key = 64
             ) 
@@ -69,10 +72,10 @@ def company_mode():
         with col5:
             use_percentage = st.number_input(
                 label = 'What percentage of employees use LLM daily (in %)?',
-                min_value=0,
+                min_value=10,
                 max_value=100,
-                value=75,   # valeur par défaut
-                step=5,
+                value=80,   
+                step=10,
                 key = 65
             )
 
@@ -80,7 +83,7 @@ def company_mode():
         #par example, entre 400 - 800 > entreprise taille moyenne, frequence correspondant : ...
         with col6:
             request_frequency = st.number_input(
-                label = 'How frequently do the employees use LLM (times per day)?',
+                label = 'How frequently do the employees use LLM (requests per day)?',
                 min_value=1,
                 value=20,   # valeur par défaut
                 step=5,
@@ -89,31 +92,43 @@ def company_mode():
 
     company_multiplier = company_size * use_percentage/100 * request_frequency
 
-    try:
+    #try:
 
-        impacts = llm_impacts(
-                        provider=provider_raw,
-                        model_name=model_raw,
-                        output_token_count=[x[1] for x in PROMPTS if x[0] == output_tokens][0],
-                        request_latency=100000
-                    )
+    impacts = llm_impacts(
+                    provider=provider_raw,
+                    model_name=model_raw,
+                    output_token_count=[x[1] for x in PROMPTS if x[0] == output_tokens][0],
+                    request_latency=100000
+                )
 
-        range_percent_impact_one_sided_calculated = range_percent_impact_one_sided(impacts)
-        impacts, _, _ = format_impacts(impacts)
+    range_percent_impact_one_sided_calculated = range_percent_impact_one_sided(impacts)
+    impacts, _, _ = format_impacts(impacts)
 
+    display_company = True
+    
+    with st.container(border=True):
+
+        st.markdown('<h3 align = "center">Environmental impacts</h3>', unsafe_allow_html=True)
+        st.markdown('<p align = "center">To understand how the impacts are computed, visit the 📖 Methodology tab. ' \
+        'Over the course of a day, the enviornmental impacts from the LLM usage of this company is estimated to be:</p>', unsafe_allow_html=True)
+        display_impacts(impacts, range_percent_impact_one_sided_calculated, company_multiplier)
+    
+    with st.container(border=False):
+            st.markdown('<h3 align = "center">Equivalences</h3>', unsafe_allow_html=True)
+            if display_company == True:
+                st.markdown('<p align = "center">The company making these requests to the LLM over a day is equivalent to the following actions:</p>', unsafe_allow_html=True)            
+            else:
+                st.markdown('<p align = "center">Making this request to the LLM is equivalent to the following actions:</p>', unsafe_allow_html=True)
+            page = st.radio(' ', ['Energy', 'GHG', 'Water'], horizontal=True, key='company_page_radio')
 
         
-        with st.container(border=True):
-
-            st.markdown('<h3 align = "center">Environmental impacts</h3>', unsafe_allow_html=True)
-            st.markdown('<p align = "center">To understand how the environmental impacts are computed go to the 📖 Methodology tab.</p>', unsafe_allow_html=True)
-            display_impacts_company(impacts, provider, company_multiplier, range_percent_impact_one_sided_calculated, location="🌎 World")
+    with st.container(border=True):                                            
+        if page == 'Energy' :
+            display_equivalent_energy(impacts, company_multiplier, display_company)
+        elif page == 'GHG' :  
+            display_equivalent_ghg(impacts, company_multiplier,display_company)    
+        else :  
+            display_equivalent_wcf(impacts, company_multiplier,display_company)
         
-        with st.container(border=True):
-            #TODO : corriger ça 
-            st.markdown('<h3 align = "center">That\'s equivalent to ...</h3>', unsafe_allow_html=True)
-            st.markdown('<p align = "center">On the scale of the company, making this request to the LLM over a day is equivalent to the following actions :</p>', unsafe_allow_html=True)
-            display_equivalent_company(impacts, provider, company_multiplier, location="🌎 World")
-                
-    except Exception as e:
-       st.error('Could not find the model in the repository. Please try another model.')
+    # except Exception as e:
+    #    st.error('Could not find the model in the repository. Please try another model.')

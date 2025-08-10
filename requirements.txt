@@ -1,5 +1,5 @@
-streamlit
-ecologits
+ecologits==0.7.3
 pint
 plotly
+streamlit
 tiktoken
