@@ -2,6 +2,8 @@ from csv import DictReader
 import pandas as pd
 
 PATH = "src/data/electricity_mix.csv"
+#ATTENTION ! Il a deux fichiers avec le même nom, un dans data/electricity_mix.csv et l'autre dans src/data/electricity_mix.csv
+#vérifie que je modifie le bon fichier
 
 COUNTRY_CODES = [
     ("🌎 World", "WOR"),
@@ -144,7 +146,6 @@ COUNTRY_CODES = [
     ("🇦🇱 Albania", "ALB"),
     ("🇦🇪 United Arab Emirates", "ARE"),
 ]
-
 
 def find_electricity_mix(code: str):
     # TODO: Maybe more optimal to construct database at the beginning of the app
