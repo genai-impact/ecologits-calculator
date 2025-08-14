@@ -286,57 +286,67 @@ def format_gwp_eq_airplane_paris_nyc(gwp: Quantity) -> Quantity:
 ### VISUALIZATIONS
 #####################################################################################
 
-def range_plot (mean_val, min_val, max_val, unit):
-    
+def range_plot(mean_val, min_val, max_val, unit):
+    #prevents invalid values
+    if min_val > max_val:
+        min_val, max_val = max_val, min_val
+    if any(map(lambda v: v is None or (isinstance(v, float) and math.isnan(v)),
+               [mean_val, min_val, max_val])):
+        st.warning("Valeurs invalides pour le range plot.")
+        return
+    mean_clamped = min(max(mean_val, min_val), max_val)
+
     fig = go.Figure()
 
-    # Background bar
+    #background
     fig.add_trace(go.Bar(
-        x=[max_val],
-        y=[''],
+        x=[max_val - min_val],
+        y=[''],                  
+        base=min_val,            
         orientation='h',
         marker=dict(color="#0B3B36"),
         showlegend=False,
         hoverinfo='skip',
     ))
-    
-    # Vertical line 
+    fig.update_layout(height=120, bargap=0.6)
+
     fig.add_shape(
         type="line",
-        x0=mean_val, y0=-1,
-        x1=mean_val, y1=1,
-        line=dict(color='#00BF63', width=3, dash="solid"),
-        #name="Average"
+        x0=mean_clamped, x1=mean_clamped,
+        y0=0.2, y1=0.8,
+        xref='x', yref='paper',
+        line=dict(color='#00BF63', width=3)
+    )
+    
+
+    for xval, label, ypaper in [(min_val, "Min", -0.10), (max_val, "Max", -0.10),
+                                (min_val, f"{min_val:.3g} {unit}", -0.25),
+                                (max_val, f"{max_val:.3g} {unit}", -0.25)]:
+        fig.add_annotation(
+            x=xval, y=ypaper,
+            xref='x', yref='paper',
+            text=label,
+            showarrow=False,
+            font=dict(color="black", size=14)
+        )
+
+
+    fig.add_annotation(
+        x=mean_clamped, y=1.10,
+        xref='x', yref='paper',
+        text=f'{mean_val:.3g} {unit}',
+        showarrow=False,
+        font=dict(color="black", size=28)
     )
 
-    # Add labels
-    for val, pos, text in zip([max_val, min_val]*2,[0.85,0.85,1.6,1.6], ["Max", "Min", f'{max_val:.3g} {unit}', f'{min_val:.3g} {unit}']):
-        fig.add_annotation(
-            x=val,
-            y=-pos,
-            text=text,
-            showarrow=False,
-            font=dict(color="black", size=16)
-    )
-        
-    fig.add_annotation(
-            x=mean_val,
-            y=1.65,
-            text=f'{mean_val:.3g} {unit}',
-            showarrow=False,
-            font=dict(color="black",  size=35)
-    )
-     
-    # Layout adjustments
     fig.update_layout(
         height=160,
-        width = 400,
+        width=400,
         xaxis=dict(range=[min_val, max_val], showgrid=False, showticklabels=False),
         yaxis=dict(showticklabels=False),
         plot_bgcolor='white',
-        margin=dict(l=100, r=100, t=0, b=20),
+        margin=dict(l=60, r=60, t=10, b=40),
         showlegend=False
     )
 
-    # Show the plot in Streamlit
-    st.plotly_chart(fig, use_container_width=True)    
+    st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
