@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from ecologits.impacts.modeling import Impacts, Energy, GWP, ADPe, PE
+from ecologits.impacts.modeling import Impacts, Energy, GWP, ADPe, PE, WCF
 
 # from ecologits.tracers.utils import llm_impacts
 from pint import UnitRegistry, Quantity
@@ -15,16 +15,23 @@ import plotly.graph_objects as go
 
 u = UnitRegistry()
 u.define("Wh = watt_hour")
+u.define("mWh = milliwatt_hour")
 u.define("kWh = kilowatt_hour")
 u.define("MWh = megawatt_hour")
 u.define("GWh = gigawatt_hour")
 u.define("TWh = terawatt_hour")
 u.define("gCO2eq = gram")
+u.define("mgCO2eq = milligram")
 u.define("kgCO2eq = kilogram")
 u.define("tCO2eq = metricton")
 u.define("kgSbeq = kilogram")
+u.define("gSbeq = gram")
+u.define("mgSbeq = milligram")
+u.define("µgSbeq = microgram")
 u.define("kJ = kilojoule")
 u.define("MJ = megajoule")
+u.define("L = liter")
+u.define("mL = milliliter")
 u.define("m = meter")
 u.define("km = kilometer")
 u.define("s = second")
@@ -36,17 +43,22 @@ q = u.Quantity
 @dataclass
 class QImpacts:
     energy: Quantity
-    energy_min : Quantity
-    energy_max : Quantity
     gwp: Quantity
-    gwp_min : Quantity
-    gwp_max : Quantity
     adpe: Quantity
-    adpe_min : Quantity
-    adpe_max : Quantity
     pe: Quantity
-    pe_min : Quantity
-    pe_max : Quantity
+    wcf: Quantity
+    ranges: bool = False
+    energy_min: Quantity | None = None
+    energy_max: Quantity | None = None
+    gwp_min: Quantity | None = None
+    gwp_max: Quantity | None = None
+    adpe_min: Quantity | None = None
+    adpe_max: Quantity | None = None
+    pe_min: Quantity | None = None
+    pe_max: Quantity | None = None
+    wcf_min: Quantity | None = None
+    wcf_max: Quantity | None = None
+
 
 
 class PhysicalActivity(str, Enum):
@@ -108,75 +120,78 @@ AIRPLANE_PARIS_NYC_GWP_EQ = q("177000 kgCO2eq")
 #####################################################################################
 
 
-def format_energy(energy: Energy) -> Quantity:
-    
-    val_min = q(energy.value.min, energy.unit)
-    val_max = q(energy.value.max, energy.unit)
-    val_mean = (val_min + val_max)/2
-    
-    if val_max < q("1 kWh"):
-        val_min = val_min.to("Wh")
-        val_max = val_max.to("Wh")
-        val_mean = val_mean.to("Wh")
-    
-    return val_mean, val_min, val_max
+def format_energy(energy_value: float, energy_unit = Energy(value=0.).unit) -> Quantity:
+    val = q(energy_value, energy_unit)
+    if val < q("1 kWh"):
+        val = val.to("Wh")
+    if val < q("1 Wh"):
+        val = val.to("mWh")
+    return val
  
 
-def format_gwp(gwp: GWP) -> Quantity:
-
-    val_min = q(gwp.value.min, gwp.unit)
-    val_max =q(gwp.value.max, gwp.unit)
-    val_mean = (val_min + val_max)/2
-
-    if val_max < q("1 kgCO2eq"):
-        val_min = val_min.to("gCO2eq")
-        val_max = val_max.to("gCO2eq")
-        val_mean = val_mean.to("gCO2eq")
-    
-    return val_mean, val_min, val_max
+def format_gwp(gwp_value: float, gwp_unit = GWP(value=0.).unit) -> Quantity:
+    val = q(gwp_value, gwp_unit)
+    if val < q("1 kgCO2eq"):
+        val = val.to("gCO2eq")
+    if val < q("1 gCO2eq"):
+        val = val.to("mgCO2eq")
+    return val
 
 
-def format_adpe(adpe: ADPe) -> Quantity:
+def format_adpe(adpe_value: float, adpe_unit = ADPe(value=0.).unit) -> Quantity:
+    val = q(adpe_value, adpe_unit)
+    if val < q("1 kgSbeq"):
+        val = val.to("gSbeq")
+    if val < q("1 gSbeq"):
+        val = val.to("mgSbeq")
+    if val < q("1 mgSbeq"):
+        val = val.to("µgSbeq")
+    return val
 
-    val_min = q(adpe.value.min, adpe.unit)
-    val_max = q(adpe.value.max, adpe.unit)
-    val_mean = (val_min + val_max)/2
-    return val_mean, val_min, val_max
+
+def format_pe(pe_value: float, pe_unit = PE(value=0.).unit) -> Quantity:
+    val = q(pe_value, pe_unit)
+    if val < q("1 MJ"):
+        val = val.to("kJ")
+    return val
 
 
-def format_pe(pe: PE) -> Quantity:
-
-    val_min = q(pe.value.min, pe.unit)
-    val_max = q(pe.value.max, pe.unit)
-    val_mean = (val_min + val_max)/2
-    
-    if val_max < q("1 MJ"):
-        val_min = val_min.to("kJ")
-        val_max = val_max.to("kJ")
-        val_mean = val_mean.to("kJ")
-    
-    return val_mean, val_min, val_max
+def format_wcf(wcf_value: float, wcf_unit = WCF(value=0.).unit) -> Quantity:
+    val = q(wcf_value, wcf_unit)
+    if val < q("1 L"):
+        val = val.to("mL")
+    return val
 
 
 def format_impacts(impacts: Impacts) -> QImpacts:
-    energy, energy_min, energy_max = format_energy(impacts.energy)
-    gwp, gwp_min, gwp_max = format_gwp(impacts.gwp)
-    adpe, adpe_min, adpe_max = format_adpe(impacts.adpe)
-    pe, pe_min, pe_max = format_pe(impacts.pe)
-    return QImpacts(
-                energy= energy,
-                energy_min=energy_min,
-                energy_max=energy_max,
-                gwp = gwp,
-                gwp_min = gwp_min,
-                gwp_max = gwp_max,
-                adpe = adpe,
-                adpe_min = adpe_min,
-                adpe_max = adpe_max,
-                pe = pe,
-                pe_min = pe_min,
-                pe_max = pe_max
-                                ), impacts.usage, impacts.embodied   
+    if isinstance(impacts.energy.value, float):
+        return QImpacts(
+            energy=format_energy(impacts.energy.value),
+            gwp=format_gwp(impacts.gwp.value),
+            adpe=format_adpe(impacts.adpe.value),
+            pe=format_pe(impacts.pe.value),
+            wcf=format_wcf(impacts.wcf.value)
+        ), impacts.usage, impacts.embodied
+
+    else:
+        return QImpacts(
+            energy=format_energy(impacts.energy.value.mean),
+            energy_min=format_energy(impacts.energy.value.min),
+            energy_max=format_energy(impacts.energy.value.max),
+            gwp=format_gwp(impacts.gwp.value.mean),
+            gwp_min=format_gwp(impacts.gwp.value.min),
+            gwp_max=format_gwp(impacts.gwp.value.max),
+            adpe=format_adpe(impacts.adpe.value.mean),
+            adpe_min=format_adpe(impacts.adpe.value.min),
+            adpe_max=format_adpe(impacts.adpe.value.max),
+            pe=format_pe(impacts.pe.value.mean),
+            pe_min=format_pe(impacts.pe.value.min),
+            pe_max=format_pe(impacts.pe.value.max),
+            wcf=format_wcf(impacts.wcf.value.mean),
+            wcf_min=format_wcf(impacts.wcf.value.min),
+            wcf_max=format_wcf(impacts.wcf.value.max),
+            ranges=True
+        ), impacts.usage, impacts.embodied
     
 
 def split_impacts_u_e(impacts: Impacts) -> QImpacts:
