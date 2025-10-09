@@ -1,5 +1,5 @@
-from csv import DictReader
 import pandas as pd
+
 
 PATH = "src/data/electricity_mix.csv"
 
@@ -144,17 +144,6 @@ COUNTRY_CODES = [
     ("🇦🇱 Albania", "ALB"),
     ("🇦🇪 United Arab Emirates", "ARE"),
 ]
-
-
-def find_electricity_mix(code: str):
-    # TODO: Maybe more optimal to construct database at the beginning of the app
-    #       in the same fashion as find_model
-    res = []
-    with open(PATH) as fd:
-        csv = DictReader(fd)
-        for row in csv:
-            res += [float(row[code])]
-    return res
 
 
 def dataframe_electricity_mix(countries: list):

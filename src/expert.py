@@ -1,11 +1,11 @@
 import streamlit as st
+from ecologits.electricity_mix_repository import electricity_mixes
 from ecologits.impacts.llm import compute_llm_impacts
 
 from src.utils import format_impacts, average_range_impacts
 from src.impacts import display_impacts
 from src.electricity_mix import (
     COUNTRY_CODES,
-    find_electricity_mix,
     dataframe_electricity_mix,
 )
 from src.models import load_models
@@ -102,33 +102,38 @@ def expert_mode():
 
         ########## Electricity mix ##########
 
+    with st.container(border=True):
+        st.markdown("##### Electricity mix")
+
         location = st.selectbox("Location", [x[0] for x in COUNTRY_CODES])
 
-        col4, col5, col6 = st.columns(3)
+        col4, col5, col6, col7 = st.columns(4)
+
+        country_code = [x[1] for x in COUNTRY_CODES if x[0] == location][0]
+        electricity_mix = electricity_mixes.find_electricity_mix(country_code)
 
         with col4:
-            mix_gwp = st.number_input(
-                "Electricity mix - GHG emissions [kgCO2eq / kWh]",
-                find_electricity_mix(
-                    [x[1] for x in COUNTRY_CODES if x[0] == location][0]
-                )[2],
+            em_gwp = st.number_input(
+                "GHG emissions [kgCO2eq / kWh]",
+                electricity_mix.gwp,
                 format="%0.6f",
             )
-            # disp_ranges = st.toggle('Display impact ranges', False)
         with col5:
-            mix_adpe = st.number_input(
-                "Electricity mix - Abiotic resources [kgSbeq / kWh]",
-                find_electricity_mix(
-                    [x[1] for x in COUNTRY_CODES if x[0] == location][0]
-                )[0],
+            em_adpe = st.number_input(
+                "Abiotic resources [kgSbeq / kWh]",
+                electricity_mix.adpe,
                 format="%0.13f",
             )
         with col6:
-            mix_pe = st.number_input(
-                "Electricity mix - Primary energy [MJ / kWh]",
-                find_electricity_mix(
-                    [x[1] for x in COUNTRY_CODES if x[0] == location][0]
-                )[1],
+            em_pe = st.number_input(
+                "Primary energy [MJ / kWh]",
+                electricity_mix.pe,
+                format="%0.3f",
+            )
+        with col7:
+            em_wue = st.number_input(
+                "Water consumption [L / kWh]",
+                electricity_mix.wue,
                 format="%0.3f",
             )
 
@@ -137,9 +142,12 @@ def expert_mode():
         model_total_parameter_count=total_params,
         output_token_count=output_tokens,
         request_latency=100000,
-        if_electricity_mix_gwp=mix_gwp,
-        if_electricity_mix_adpe=mix_adpe,
-        if_electricity_mix_pe=mix_pe,
+        if_electricity_mix_gwp=em_gwp,
+        if_electricity_mix_adpe=em_adpe,
+        if_electricity_mix_pe=em_pe,
+        if_electricity_mix_wue=em_wue,
+        datacenter_pue=1.2,
+        datacenter_wue=0.5
     )
 
     impacts, usage, embodied = format_impacts(impacts)
