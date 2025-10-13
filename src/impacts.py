@@ -10,15 +10,6 @@ from src.utils import (
     EnergyProduction,
 )
 
-############################################################################################################
-
-
-def get_impacts(model, active_params, total_params, mix_ghg, mix_adpe, mix_pe):
-    return 1
-
-
-############################################################################################################
-
 
 def display_impacts(impacts):
     st.divider()

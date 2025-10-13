@@ -3,7 +3,7 @@ import streamlit as st
 from ecologits.electricity_mix_repository import electricity_mixes
 from ecologits.impacts.llm import compute_llm_impacts
 
-from src.utils import format_impacts, average_range_impacts
+from src.utils import format_impacts
 from src.impacts import display_impacts
 from src.electricity_mix import COUNTRY_CODES, format_electricity_mix_criterion, format_country_name
 from src.models import load_models
@@ -175,8 +175,8 @@ def expert_mode():
         with col_ghg_comparison:
             fig_gwp = px.pie(
                 values=[
-                    average_range_impacts(usage.gwp.value),
-                    average_range_impacts(embodied.gwp.value),
+                    usage.gwp.value if isinstance(usage.gwp.value, float) else usage.gwp.value.mean,
+                    embodied.gwp.value if isinstance(embodied.gwp.value, float) else embodied.gwp.value.mean,
                 ],
                 names=["usage", "embodied"],
                 title="GHG emissions",
@@ -190,8 +190,8 @@ def expert_mode():
         with col_adpe_comparison:
             fig_adpe = px.pie(
                 values=[
-                    average_range_impacts(usage.adpe.value),
-                    average_range_impacts(embodied.adpe.value),
+                    usage.adpe.value if isinstance(usage.adpe.value, float) else usage.adpe.value.mean,
+                    embodied.adpe.value if isinstance(embodied.adpe.value, float) else embodied.adpe.value.mean,
                 ],
                 names=["usage", "embodied"],
                 title="Abiotic depletion",
@@ -205,8 +205,8 @@ def expert_mode():
         with col_pe_comparison:
             fig_pe = px.pie(
                 values=[
-                    average_range_impacts(usage.pe.value),
-                    average_range_impacts(embodied.pe.value),
+                    usage.pe.value if isinstance(usage.pe.value, float) else usage.pe.value.mean,
+                    embodied.pe.value if isinstance(embodied.pe.value, float) else embodied.pe.value.mean,
                 ],
                 names=["usage", "embodied"],
                 title="Primary energy",

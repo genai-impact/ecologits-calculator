@@ -1,12 +1,10 @@
 from dataclasses import dataclass
 from enum import Enum
 
-from ecologits.impacts.modeling import Impacts, Energy, GWP, ADPe, PE, WCF
+from ecologits.impacts.modeling import Impacts, Energy, GWP, ADPe, PE, WCF, Usage, Embodied
 
-# from ecologits.tracers.utils import llm_impacts
 from pint import UnitRegistry, Quantity
 import streamlit as st
-import plotly.express as px
 import plotly.graph_objects as go
 
 #####################################################################################
@@ -163,7 +161,7 @@ def format_wcf(wcf_value: float, wcf_unit = WCF(value=0.).unit) -> Quantity:
     return val
 
 
-def format_impacts(impacts: Impacts) -> QImpacts:
+def format_impacts(impacts: Impacts) -> tuple[QImpacts, Usage, Embodied]:
     if isinstance(impacts.energy.value, float):
         return QImpacts(
             energy=format_energy(impacts.energy.value),
@@ -192,50 +190,6 @@ def format_impacts(impacts: Impacts) -> QImpacts:
             wcf_max=format_wcf(impacts.wcf.value.max),
             ranges=True
         ), impacts.usage, impacts.embodied
-    
-
-def split_impacts_u_e(impacts: Impacts) -> QImpacts:
-    return impacts.usage, impacts.embodied
-
-
-def average_range_impacts(x):
-    if isinstance(x, float):
-        return x
-    else:
-        return (x.max + x.min) / 2
-
-
-def format_impacts_expert(impacts: Impacts, display_range: bool) -> QImpacts:
-    if display_range:
-        return (
-            QImpacts(
-                energy=format_energy(impacts.energy),
-                gwp=format_gwp(impacts.gwp),
-                adpe=format_adpe(impacts.adpe),
-                pe=format_pe(impacts.pe),
-            ),
-            impacts.usage,
-            impacts.embodied,
-        )
-
-    else:
-        energy = {
-            "value": (impacts.energy.value.max + impacts.energy.value.min) / 2,
-            "unit": impacts.energy.unit,
-        }
-        gwp = (impacts.gwp.value.max + impacts.gwp.value.min) / 2
-        adpe = (impacts.adpe.value.max + impacts.adpe.value.min) / 2
-        pe = (impacts.pe.value.max + impacts.pe.value.min) / 2
-        return (
-            QImpacts(
-                energy=format_energy(energy),
-                gwp=format_gwp(gwp),
-                adpe=format_adpe(adpe),
-                pe=format_pe(pe),
-            ),
-            impacts.usage,
-            impacts.embodied,
-        )
 
 
 #####################################################################################
@@ -295,7 +249,7 @@ def format_energy_eq_electricity_consumption_ireland(energy: Quantity) -> Quanti
 def format_gwp_eq_airplane_paris_nyc(gwp: Quantity) -> Quantity:
     gwp_eq = gwp * ONE_PERCENT_WORLD_POPULATION * DAYS_IN_YEAR
     gwp_eq = gwp_eq.to("kgCO2eq")
-    return gwp_eq / AIRPLANE_PARIS_NYC_GWP_EQ####################################################################################### MODELS PARAMETER####################################################################################
+    return gwp_eq / AIRPLANE_PARIS_NYC_GWP_EQ
 
 #####################################################################################
 ### VISUALIZATIONS
@@ -354,4 +308,4 @@ def range_plot (mean_val, min_val, max_val, unit):
     )
 
     # Show the plot in Streamlit
-    st.plotly_chart(fig, use_container_width=True)    
+    st.plotly_chart(fig, use_container_width=True)

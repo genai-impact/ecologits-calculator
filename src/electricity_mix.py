@@ -74,22 +74,3 @@ def format_country_name(code: str) -> str | None:
 
 def format_electricity_mix_criterion(criterion: str) -> str | None:
     return CRITERIA.get(criterion)
-
-
-def dataframe_electricity_mix(countries: list):
-    df = pd.read_csv("src/data/electricity_mix.csv")
-
-
-    df["name_unit"] = df["name"] + " (" + df["unit"] + ")"
-    df = df[["name_unit"] + [x[1] for x in COUNTRY_CODES if x[0] in countries]]
-
-    df_melted = df.melt(
-        id_vars=["name_unit"],
-        value_vars=[x[1] for x in COUNTRY_CODES if x[0] in countries],
-        var_name="country",
-        value_name="value",
-    )
-
-    df = df_melted.pivot(columns="name_unit", index="country", values="value")
-
-    return df

@@ -1,7 +1,7 @@
 import streamlit as st
 
 from ecologits.tracers.utils import llm_impacts
-from src.impacts import get_impacts, display_impacts, display_equivalent_ghg, display_equivalent_energy
+from src.impacts import display_impacts, display_equivalent_ghg, display_equivalent_energy
 from src.utils import format_impacts
 from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_BOTH, HOW_TO_TEXT
 from src.models import load_models
