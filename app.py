@@ -6,7 +6,6 @@ from src.content import (
     CITATION_LABEL,
     CITATION_TEXT,
     LICENCE_TEXT,
-    INTRO_TEXT,
     METHODOLOGY_TEXT,
     SUPPORT_TEXT,
 )
@@ -21,8 +20,6 @@ with open("src/style.css") as css:
     st.markdown(f"<style>{css.read()}</style>", unsafe_allow_html=True)
 
 st.html(HERO_TEXT)
-
-st.success(INTRO_TEXT, icon="🌱")
 
 tab_calculator, tab_expert, tab_token, tab_method, tab_about, tab_support = st.tabs(
     [
