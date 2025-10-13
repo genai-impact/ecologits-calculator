@@ -20,11 +20,11 @@ def expert_mode():
 
         ########## Model info ##########
 
-        col1, col2, col3 = st.columns(3)
+        provider_col, model_col = st.columns(2)
 
         df = load_models(filter_main=True)
 
-        with col1:
+        with provider_col:
             provider_exp = st.selectbox(
                 label="Provider",
                 options=[x for x in df["provider_clean"].unique()],
@@ -32,7 +32,7 @@ def expert_mode():
                 key=1,
             )
 
-        with col2:
+        with model_col:
             model_exp = st.selectbox(
                 label="Model",
                 options=[
@@ -72,14 +72,14 @@ def expert_mode():
 
         ########## Model parameters ##########
 
-        col11, col22, col33 = st.columns(3)
+        active_params_col, total_params_col = st.columns(2)
 
-        with col11:
+        with active_params_col:
             active_params = st.number_input(
                 "Active parameters (B)", 0, None, active_params
             )
 
-        with col22:
+        with total_params_col:
             total_params = st.number_input(
                 "Total parameters (B)", 0, None, total_params
             )
@@ -88,14 +88,14 @@ def expert_mode():
     with st.container(border=True):
         st.markdown("###### Configure the prompt")
 
-        col1, col2 = st.columns(2)
+        provider_col, model_col = st.columns(2)
 
-        with col1:
+        with provider_col:
             output_tokens_exp = st.selectbox(
                 label="Example prompt", options=[x[0] for x in PROMPTS], key=3
             )
 
-        with col2:
+        with model_col:
             output_tokens = st.number_input(
                 label="Output completion tokens",
                 min_value=0,
@@ -106,12 +106,16 @@ def expert_mode():
     with st.container(border=True):
         st.markdown("###### Configure the electricity mix of the data center")
 
-        location = st.selectbox("Location", [x[0] for x in COUNTRY_CODES])
+        location = st.selectbox(
+            label="Data center location",
+            options=[c[1] for c in COUNTRY_CODES],
+            format_func=format_country_name,
+            index=0
+        )
 
         col4, col5, col6, col7 = st.columns(4)
 
-        country_code = [x[1] for x in COUNTRY_CODES if x[0] == location][0]
-        electricity_mix = electricity_mixes.find_electricity_mix(country_code)
+        electricity_mix = electricity_mixes.find_electricity_mix(location)
 
         with col4:
             em_gwp = st.number_input(

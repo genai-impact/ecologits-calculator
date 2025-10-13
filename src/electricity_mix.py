@@ -5,6 +5,7 @@ import pandas as pd
 
 PATH = "src/data/electricity_mix.csv"
 COUNTRY_CODES = [
+    ("🌎 World", "WOR"),
     ("🇦🇺 Australia", "AUS"),
     ("🇦🇹 Austria", "AUT"),
     ("🇦🇷 Argentina", "ARG"),
@@ -53,8 +54,7 @@ COUNTRY_CODES = [
     ("🇹🇭 Thailand", "THA"),
     ("🇹🇷 Turkey", "TUR"),
     ("🇹🇼 Taiwan", "TWN"),
-    ("🇺🇸 United States", "USA"),
-    ("🌎 World", "WOR"),
+    ("🇺🇸 United States", "USA")
 ]
 
 CRITERIA = {
