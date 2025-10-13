@@ -1,27 +1,23 @@
+import pandas as pd
 import streamlit as st
 from ecologits.electricity_mix_repository import electricity_mixes
 from ecologits.impacts.llm import compute_llm_impacts
 
 from src.utils import format_impacts, average_range_impacts
 from src.impacts import display_impacts
-from src.electricity_mix import (
-    COUNTRY_CODES,
-    dataframe_electricity_mix,
-)
+from src.electricity_mix import COUNTRY_CODES, format_electricity_mix_criterion, format_country_name
 from src.models import load_models
 from src.constants import PROMPTS
 
 import plotly.express as px
 
 
-def reset_model():
-    model = "CUSTOM"
-
-
 def expert_mode():
     st.markdown("### 🤓 Expert mode")
 
     with st.container(border=True):
+        st.markdown("###### Configure the model")
+
         ########## Model info ##########
 
         col1, col2, col3 = st.columns(3)
@@ -46,11 +42,6 @@ def expert_mode():
                     in df[df["provider_clean"] == provider_exp]["name_clean"].unique()
                 ],
                 key=2,
-            )
-
-        with col3:
-            output_tokens_exp = st.selectbox(
-                label="Example prompt", options=[x[0] for x in PROMPTS], key=3
             )
 
         df_filtered = df[
@@ -93,17 +84,27 @@ def expert_mode():
                 "Total parameters (B)", 0, None, total_params
             )
 
-        with col33:
+
+    with st.container(border=True):
+        st.markdown("###### Configure the prompt")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            output_tokens_exp = st.selectbox(
+                label="Example prompt", options=[x[0] for x in PROMPTS], key=3
+            )
+
+        with col2:
             output_tokens = st.number_input(
                 label="Output completion tokens",
                 min_value=0,
                 value=[x[1] for x in PROMPTS if x[0] == output_tokens_exp][0],
             )
 
-        ########## Electricity mix ##########
 
     with st.container(border=True):
-        st.markdown("##### Electricity mix")
+        st.markdown("###### Configure the electricity mix of the data center")
 
         location = st.selectbox("Location", [x[0] for x in COUNTRY_CODES])
 
@@ -224,24 +225,25 @@ def expert_mode():
 
         countries_to_compare = st.multiselect(
             label="Countries to compare",
-            options=[x[0] for x in COUNTRY_CODES],
-            default=["🇫🇷 France", "🇺🇸 United States", "🇨🇳 China"],
+            options=[c[1] for c in COUNTRY_CODES],
+            format_func=format_country_name,
+            default=["FRA", "USA", "CHN"],
         )
 
         try:
-            df_comp = dataframe_electricity_mix(countries_to_compare)
-
             impact_type = st.selectbox(
                 label="Select an impact type to compare",
-                options=[x for x in df_comp.columns if x != "country"],
-                index=1,
+                options=["gwp", "adpe", "pe", "wue"],
+                format_func=format_electricity_mix_criterion,
+                index=0,
             )
 
-            df_comp.sort_values(by=impact_type, inplace=True)
+            df_comp = pd.DataFrame([em for em in electricity_mixes.list_electricity_mixes() if em.zone in countries_to_compare])
+            df_comp = df_comp.sort_values(by=impact_type, ascending=True)
 
             fig_2 = px.bar(
                 df_comp,
-                x=df_comp.index,
+                x=df_comp.zone.apply(format_country_name),
                 y=impact_type,
                 text=impact_type,
                 color=impact_type,
