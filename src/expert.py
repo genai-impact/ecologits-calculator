@@ -104,41 +104,53 @@ def expert_mode():
 
 
     with st.container(border=True):
-        st.markdown("###### Configure the electricity mix of the data center")
+        st.markdown("###### Configure the data center")
 
-        location = st.selectbox(
-            label="Data center location",
-            options=[c[1] for c in COUNTRY_CODES],
-            format_func=format_country_name,
-            index=0
-        )
+        dc_pue_col, dc_wue_col, dc_location_col = st.columns(3)
+        with dc_pue_col:
+            datacenter_pue = st.number_input(
+                label="Data center PUE",
+                value=1.2,
+                min_value=1.0
+            )
+        with dc_wue_col:
+            datacenter_wue = st.number_input(
+                label="Data center WUE [L / kWh]",
+                value=0.6,
+                min_value=0.
+            )
+        with dc_location_col:
+            dc_location = st.selectbox(
+                label="Data center location",
+                options=[c[1] for c in COUNTRY_CODES],
+                format_func=format_country_name,
+                index=0
+            )
 
-        col4, col5, col6, col7 = st.columns(4)
-
-        electricity_mix = electricity_mixes.find_electricity_mix(location)
-
-        with col4:
+        em_gwp_col, em_adpe_col, em_pe_col, em_wue_col = st.columns(4)
+        electricity_mix = electricity_mixes.find_electricity_mix(dc_location)
+        with em_gwp_col:
             em_gwp = st.number_input(
-                "GHG emissions [kgCO2eq / kWh]",
-                electricity_mix.gwp,
+                label="GHG emissions [kgCO2eq / kWh]",
+                value=electricity_mix.gwp,
                 format="%0.6f",
             )
-        with col5:
+        with em_adpe_col:
             em_adpe = st.number_input(
-                "Abiotic resources [kgSbeq / kWh]",
-                electricity_mix.adpe,
+                label="Abiotic resources [kgSbeq / kWh]",
+                value=electricity_mix.adpe,
                 format="%0.13f",
             )
-        with col6:
+        with em_pe_col:
             em_pe = st.number_input(
-                "Primary energy [MJ / kWh]",
-                electricity_mix.pe,
+                label="Primary energy [MJ / kWh]",
+                value=electricity_mix.pe,
                 format="%0.3f",
             )
-        with col7:
+        with em_wue_col:
             em_wue = st.number_input(
-                "Water consumption [L / kWh]",
-                electricity_mix.wue,
+                label="Water consumption [L / kWh]",
+                value=electricity_mix.wue,
                 format="%0.3f",
             )
 
@@ -151,8 +163,8 @@ def expert_mode():
         if_electricity_mix_adpe=em_adpe,
         if_electricity_mix_pe=em_pe,
         if_electricity_mix_wue=em_wue,
-        datacenter_pue=1.2,
-        datacenter_wue=0.5
+        datacenter_pue=datacenter_pue,
+        datacenter_wue=datacenter_wue
     )
 
     impacts, usage, embodied = format_impacts(impacts)
