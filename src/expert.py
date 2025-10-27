@@ -42,7 +42,6 @@ def expert_mode():
             model_exp = st.selectbox(
                 label="Model",
                 options=models_clean,
-                index=models_clean.index("gpt 5"),
                 key=2,
             )
 

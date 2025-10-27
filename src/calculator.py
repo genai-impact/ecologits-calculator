@@ -36,7 +36,6 @@ def calculator_mode():
             model = st.selectbox(
                 label="Model",
                 options=models_clean,
-                index=models_clean.index("gpt 5"),
             )
 
         with col3:
