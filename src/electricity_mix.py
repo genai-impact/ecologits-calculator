@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pandas as pd
-
 
 PATH = "src/data/electricity_mix.csv"
 COUNTRY_CODES = [
