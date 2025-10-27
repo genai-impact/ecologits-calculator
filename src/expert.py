@@ -25,22 +25,24 @@ def expert_mode():
         df = load_models(filter_main=True)
 
         with provider_col:
+            providers_clean = [x for x in df["provider_clean"].unique()]
             provider_exp = st.selectbox(
                 label="Provider",
-                options=[x for x in df["provider_clean"].unique()],
-                index=7,
+                options=providers_clean,
+                index=providers_clean.index("OpenAI"),
                 key=1,
             )
 
         with model_col:
+            models_clean = [
+                x
+                for x in df["name_clean"].unique()
+                if x in df[df["provider_clean"] == provider_exp]["name_clean"].unique()
+            ]
             model_exp = st.selectbox(
                 label="Model",
-                options=[
-                    x
-                    for x in df["name_clean"].unique()
-                    if x
-                    in df[df["provider_clean"] == provider_exp]["name_clean"].unique()
-                ],
+                options=models_clean,
+                index=models_clean.index("gpt 5"),
                 key=2,
             )
 

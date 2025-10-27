@@ -1,3 +1,4 @@
+import math
 import streamlit as st
 
 from ecologits.tracers.utils import llm_impacts
@@ -27,17 +28,23 @@ def calculator_mode():
             )
 
         with col2:
+            models_clean = [
+                x
+                for x in df["name_clean"].unique()
+                if x in df[df["provider_clean"] == provider]["name_clean"].unique()
+            ]
             model = st.selectbox(
                 label="Model",
-                options=[
-                    x
-                    for x in df["name_clean"].unique()
-                    if x in df[df["provider_clean"] == provider]["name_clean"].unique()
-                ]
+                options=models_clean,
+                index=models_clean.index("gpt 5"),
             )
 
         with col3:
-            output_tokens = st.selectbox("Example prompt", [x[0] for x in PROMPTS])
+            output_tokens = st.selectbox(
+                label="Example prompt",
+                options=[x[0] for x in PROMPTS],
+                index=2
+            )
 
         # WARNING DISPLAY
         provider_raw = df[
