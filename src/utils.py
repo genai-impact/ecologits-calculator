@@ -172,22 +172,28 @@ def format_impacts(impacts: Impacts) -> tuple[QImpacts, Usage, Embodied]:
         ), impacts.usage, impacts.embodied
 
     else:
+        energy = format_energy(impacts.energy.value.mean)
+        gwp = format_gwp(impacts.gwp.value.mean)
+        adpe = format_adpe(impacts.adpe.value.mean)
+        pe = format_pe(impacts.pe.value.mean)
+        wcf = format_wcf(impacts.wcf.value.mean)
+
         return QImpacts(
-            energy=format_energy(impacts.energy.value.mean),
-            energy_min=format_energy(impacts.energy.value.min),
-            energy_max=format_energy(impacts.energy.value.max),
-            gwp=format_gwp(impacts.gwp.value.mean),
-            gwp_min=format_gwp(impacts.gwp.value.min),
-            gwp_max=format_gwp(impacts.gwp.value.max),
-            adpe=format_adpe(impacts.adpe.value.mean),
-            adpe_min=format_adpe(impacts.adpe.value.min),
-            adpe_max=format_adpe(impacts.adpe.value.max),
-            pe=format_pe(impacts.pe.value.mean),
-            pe_min=format_pe(impacts.pe.value.min),
-            pe_max=format_pe(impacts.pe.value.max),
-            wcf=format_wcf(impacts.wcf.value.mean),
-            wcf_min=format_wcf(impacts.wcf.value.min),
-            wcf_max=format_wcf(impacts.wcf.value.max),
+            energy=energy,
+            energy_min=format_energy(impacts.energy.value.min).to(energy.units),
+            energy_max=format_energy(impacts.energy.value.max).to(energy.units),
+            gwp=gwp,
+            gwp_min=format_gwp(impacts.gwp.value.min).to(gwp.units),
+            gwp_max=format_gwp(impacts.gwp.value.max).to(gwp.units),
+            adpe=adpe,
+            adpe_min=format_adpe(impacts.adpe.value.min).to(adpe.units),
+            adpe_max=format_adpe(impacts.adpe.value.max).to(adpe.units),
+            pe=pe,
+            pe_min=format_pe(impacts.pe.value.min).to(pe.units),
+            pe_max=format_pe(impacts.pe.value.max).to(pe.units),
+            wcf=wcf,
+            wcf_min=format_wcf(impacts.wcf.value.min).to(wcf.units),
+            wcf_max=format_wcf(impacts.wcf.value.max).to(wcf.units),
             ranges=True
         ), impacts.usage, impacts.embodied
 

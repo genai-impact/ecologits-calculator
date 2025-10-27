@@ -33,7 +33,7 @@ def calculator_mode():
                     x
                     for x in df["name_clean"].unique()
                     if x in df[df["provider_clean"] == provider]["name_clean"].unique()
-                ],
+                ]
             )
 
         with col3:
@@ -72,7 +72,7 @@ def calculator_mode():
             provider=provider_raw,
             model_name=model_raw,
             output_token_count=[x[1] for x in PROMPTS if x[0] == output_tokens][0],
-            request_latency=100000,
+            request_latency=math.inf,
         )
 
         impacts, _, _ = format_impacts(impacts)
