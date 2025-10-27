@@ -35,7 +35,8 @@ main_models_anthropic = [
     "claude-opus-4-0",
     "claude-opus-4-1",
     "claude-sonnet-4-0",
-    "claude-sonnet-4-5"
+    "claude-sonnet-4-5",
+    "claude-haiku-4-5"
 ]
 
 main_models_cohere = [
@@ -55,9 +56,7 @@ main_models_google = [
     "gemma-3-1b-it",
     "gemma-3-4b-it",
     "gemma-3-12b-it",
-    "gemma-3-27b-it",
-    "gemma-3n-e2b-it",
-    "gemma-3n-e4b-it"
+    "gemma-3-27b-it"
 ]
 
 main_models_mistral = [
