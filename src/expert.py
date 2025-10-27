@@ -3,10 +3,12 @@ import streamlit as st
 from ecologits.electricity_mix_repository import electricity_mixes
 from ecologits.impacts.llm import compute_llm_impacts
 
+from src.latency_estimator import latency_estimator
 from src.utils import format_impacts
 from src.impacts import display_impacts
 from src.electricity_mix import COUNTRY_CODES, format_electricity_mix_criterion, format_country_name
 from src.models import load_models
+from src.constants import PROMPTS
 from src.constants import PROMPTS
 
 import plotly.express as px
@@ -71,32 +73,35 @@ def expert_mode():
                 / 2
             )
 
+        provider_raw = df_filtered["provider"].values[0]
+        model_name_raw = df_filtered["name"].values[0]
+        tps_raw = latency_estimator.get_throughput(provider_raw, model_name_raw)
+
         ########## Model parameters ##########
 
-        active_params_col, total_params_col = st.columns(2)
+        active_params_col, total_params_col, throughput_col = st.columns(3)
 
         with active_params_col:
-            active_params = st.number_input(
-                "Active parameters (B)", 0, None, active_params
-            )
+            active_params = st.number_input("Active parameters (B)", 0, None, active_params)
 
         with total_params_col:
-            total_params = st.number_input(
-                "Total parameters (B)", 0, None, total_params
-            )
+            total_params = st.number_input("Total parameters (B)", 0, None, total_params)
+
+        with throughput_col:
+            throughput = st.number_input("Average TPS", 1.0, None, tps_raw)
 
 
     with st.container(border=True):
         st.markdown("###### Configure the prompt")
 
-        provider_col, model_col = st.columns(2)
+        prompt_col, token_col = st.columns(2)
 
-        with provider_col:
+        with prompt_col:
             output_tokens_exp = st.selectbox(
                 label="Example prompt", options=[x[0] for x in PROMPTS], key=3
             )
 
-        with model_col:
+        with token_col:
             output_tokens = st.number_input(
                 label="Output completion tokens",
                 min_value=0,
@@ -155,11 +160,18 @@ def expert_mode():
                 format="%0.3f",
             )
 
+    estimated_latency = latency_estimator.estimate(
+        provider=provider_raw,
+        model_name=model_name_raw,
+        output_tokens=output_tokens,
+        throughput=throughput
+    )
+
     impacts = compute_llm_impacts(
         model_active_parameter_count=active_params,
         model_total_parameter_count=total_params,
         output_token_count=output_tokens,
-        request_latency=100000,
+        request_latency=estimated_latency,
         if_electricity_mix_gwp=em_gwp,
         if_electricity_mix_adpe=em_adpe,
         if_electricity_mix_pe=em_pe,
