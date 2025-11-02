@@ -1,7 +1,7 @@
 HERO_TEXT = """
 <div align="center" class="hero">
   <a href="https://ecologits.ai/">
-    <img style="max-height: 200px" alt="EcoLogits" src="https://raw.githubusercontent.com/genai-impact/ecologits/main/docs/assets/logo_calculator.png">
+    <img style="max-height: 200px" alt="EcoLogits" src="https://raw.githubusercontent.com/genai-impact/ecologits-calculator/main/assets/logo.png">
   </a>
 </div>
 <div align="center">
