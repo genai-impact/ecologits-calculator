@@ -4,7 +4,7 @@ html, body, [class*="css"] {
     font-family: 'Montserrat', sans-serif; 
     font-size: 18px;
     font-weight: 500;
-    color: #091747;
+    color: #062522;
 }
 
 [data-testid="metric-container"] {

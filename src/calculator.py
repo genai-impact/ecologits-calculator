@@ -1,7 +1,9 @@
+import math
 import streamlit as st
 
 from ecologits.tracers.utils import llm_impacts
-from src.impacts import get_impacts, display_impacts, display_equivalent_ghg, display_equivalent_energy
+from src.impacts import display_impacts, display_equivalent_ghg, display_equivalent_energy
+from src.latency_estimator import latency_estimator
 from src.utils import format_impacts
 from src.content import WARNING_CLOSED_SOURCE, WARNING_MULTI_MODAL, WARNING_BOTH, HOW_TO_TEXT
 from src.models import load_models
@@ -27,17 +29,22 @@ def calculator_mode():
             )
 
         with col2:
+            models_clean = [
+                x
+                for x in df["name_clean"].unique()
+                if x in df[df["provider_clean"] == provider]["name_clean"].unique()
+            ]
             model = st.selectbox(
                 label="Model",
-                options=[
-                    x
-                    for x in df["name_clean"].unique()
-                    if x in df[df["provider_clean"] == provider]["name_clean"].unique()
-                ],
+                options=models_clean,
             )
 
         with col3:
-            output_tokens = st.selectbox("Example prompt", [x[0] for x in PROMPTS])
+            output_tokens = st.selectbox(
+                label="Example prompt",
+                options=[x[0] for x in PROMPTS],
+                index=2
+            )
 
         # WARNING DISPLAY
         provider_raw = df[
@@ -68,11 +75,15 @@ def calculator_mode():
             st.warning(WARNING_BOTH, icon="⚠️")
 
     try:
+        output_tokens_count = [x[1] for x in PROMPTS if x[0] == output_tokens][0]
+        estimated_latency = latency_estimator.estimate(provider=provider_raw,
+                                                       model_name=model_raw,
+                                                       output_tokens=output_tokens_count)
         impacts = llm_impacts(
             provider=provider_raw,
             model_name=model_raw,
-            output_token_count=[x[1] for x in PROMPTS if x[0] == output_tokens][0],
-            request_latency=100000,
+            output_token_count=output_tokens_count,
+            request_latency=estimated_latency
         )
 
         impacts, _, _ = format_impacts(impacts)
@@ -97,3 +108,4 @@ def calculator_mode():
             
     except Exception as e:
         st.error('Could not find the model in the repository. Please try another model.')
+        raise e
